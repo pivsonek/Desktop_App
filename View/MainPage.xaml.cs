@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Microsoft.Maui.Controls;
@@ -54,9 +54,11 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
             {
                 _selectedTab = value;
                 OnPropertyChanged(nameof(SelectedTab));
+                OnPropertyChanged(nameof(SelectedTab.Graphs));
             }
         }
     }
+
 
     // Kolekce grafů, která je propojena s UI a obsahuje seznam všech grafů.
     public ObservableCollection<GraphModel> Graphs { get; set; }
@@ -151,30 +153,31 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
                 return;
             }
 
-            // Získání řádků dat a naplnění kolekce
             var lines = await newTab.MeasureData.MakeToStringAsync(100);
             newTab.DisplayData.Clear();
             foreach (var line in lines)
             {
                 newTab.DisplayData.Add(line);
             }
+            newTab.Graphs.Add(new GraphModel() { Name = "Graf 1" });
 
             Tabs.Add(newTab);
             SelectedTab = newTab;
-
-            // OnPropertyChanged(nameof(Tabs));
-            // OnPropertyChanged(nameof(SelectedTab));
-            // FilePreviewLabel.Text = await newTab.MeasureData.MakeToStringAsync(); // Zobrazení obsahu
         }
     }
+
 
     /// <summary>
     /// Přidá nový graf do seznamu grafů.
     /// </summary>
     private void OnAddGraphClicked(object sender, EventArgs e)
     {
-        _graphManager.AddGraph(); // Přidání grafu
-        UpdateGraphVisibility(); // Aktualizace zobrazení grafů
+        if (SelectedTab != null)
+        {
+            int nextNumber = SelectedTab.Graphs.Count + 1;
+            SelectedTab.Graphs.Add(new GraphModel { Name = $"Graf {nextNumber}" });
+            UpdateGraphVisibility();
+        }
     }
 
     /// <summary>
@@ -184,46 +187,49 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
     {
         if (sender is Button button && button.BindingContext is GraphModel graph)
         {
-            // Pokud už je graf zvětšený, zmenšíme ho
+            if (SelectedTab == null) return;
+
             if (graph.IsExpanded)
             {
                 graph.IsExpanded = false;
             }
             else
             {
-                // Nejprve všechny grafy zmenšíme
-                foreach (var g in Graphs)
+                foreach (var g in SelectedTab.Graphs)
                 {
                     g.IsExpanded = false;
                 }
-                // A zvětšíme pouze vybraný graf
                 graph.IsExpanded = true;
             }
 
+            UpdateGraphVisibility();
 
-
-            UpdateGraphVisibility(); // Aktualizace UI
+            // Ujistíme se, že UI si toho všimne
+            OnPropertyChanged(nameof(SelectedTab));
         }
     }
+
+
 
     /// <summary>
     /// Aktualizuje viditelnost grafů podle jejich stavu zvětšení.
     /// </summary>
     private void UpdateGraphVisibility()
     {
-        IsAnyGraphExpanded = Graphs.Any(g => g.IsExpanded); // Kontrola, zda je nějaký graf zvětšený
-        Debug.WriteLine($"IsAnyGraphExpanded: {IsAnyGraphExpanded}");
+        if (SelectedTab == null)
+            return;
 
-        foreach (var g in Graphs)
+        IsAnyGraphExpanded = SelectedTab.Graphs.Any(g => g.IsExpanded);
+
+        foreach (var g in SelectedTab.Graphs)
         {
-            g.IsVisible = !IsAnyGraphExpanded || g.IsExpanded; // Nastavení viditelnosti podle stavu
-            Debug.WriteLine($"Graf: {g.Name}, IsVisible: {g.IsVisible}, IsExpanded: {g.IsExpanded}");
+            g.IsVisible = !IsAnyGraphExpanded || g.IsExpanded;
         }
 
-        // Přinutíme UI překreslit CollectionView
         OnPropertyChanged(nameof(IsAnyGraphExpanded));
-        OnPropertyChanged(nameof(Graphs));
+        OnPropertyChanged(nameof(SelectedTab));
     }
+
 
     /// <summary>
     /// Exportuje vybraný graf.
