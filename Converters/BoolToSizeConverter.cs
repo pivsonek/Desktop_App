@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Globalization;
 using Microsoft.Maui.Devices; // Pro získání informací o obrazovce zařízení
 using Microsoft.Maui.Controls;
@@ -28,7 +28,7 @@ public class BoolToSizeConverter : IValueConverter
             double screenHeight = DeviceDisplay.MainDisplayInfo.Height / DeviceDisplay.MainDisplayInfo.Density;
 
             // Dostupná šířka pro pravý sloupec (např. 75 % obrazovky)
-            double availableWidth = screenWidth * 0.75;
+            double availableWidth = screenWidth * 0.8;
 
             // Pokud se parametr týká výšky, nastavíme výšku podle stavu rozbalení
             if (param == "height")
@@ -41,6 +41,14 @@ public class BoolToSizeConverter : IValueConverter
             // Pokud se parametr týká rozložení sloupců, rozhodujeme mezi 1 a 2 sloupci
             if (param == "span")
                 return isExpanded ? 1 : 2; // Rozbalený graf zabere 1 sloupec, jinak jsou 2 sloupce vedle sebe
+
+            if (param == "spanLayout")
+            {
+                return isExpanded
+                    ? new GridItemsLayout(1, ItemsLayoutOrientation.Vertical)
+                    : new GridItemsLayout(2, ItemsLayoutOrientation.Vertical);
+            }
+
         }
 
         // Výchozí hodnota, pokud vstupní podmínky neodpovídají
