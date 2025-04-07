@@ -1,7 +1,10 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:converters="clr-namespace:project.Converters;assembly=project"
+             xmlns:models="clr-namespace:project.Models"
+             xmlns:view="clr-namespace:project.View"
              x:Class="project.View.MainPage"
+             x:DataType="view:MainPage"
              Title="Analýza dat"
              BackgroundColor="White">
 
@@ -53,7 +56,7 @@
                             <LinearItemsLayout Orientation="Horizontal"/>
                         </CollectionView.ItemsLayout>
                         <CollectionView.ItemTemplate>
-                            <DataTemplate>
+                            <DataTemplate x:DataType="models:GraphTab">
                                 <Border Stroke="DarkGray" StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="5">
                                     <Grid ColumnDefinitions="*, Auto" ColumnSpacing="5">
                                         <Label Text="{Binding FileName}" FontSize="14" TextColor="Black"
@@ -90,7 +93,13 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
                 <Label Text="Data pro zobrazení" FontSize="16" FontAttributes="Bold" TextColor="Black" Grid.Row="0"/>
-                <ListView x:Name="DataListView" ItemsSource="{Binding DataItems}" Grid.Row="1" BackgroundColor="White"/>
+                <ListView x:Name="DataListView" ItemsSource="{Binding DataItems}" Grid.Row="1" BackgroundColor="White">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="x:String">
+                            <TextCell Text="{Binding}" />
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
             </Grid>
             <Grid Grid.Row="1" BackgroundColor="LightSkyBlue" Padding="10">
                 <Grid.RowDefinitions>
@@ -103,7 +112,7 @@
                                     VerticalScrollBarVisibility="Always"
                                     HeightRequest="300">
                         <CollectionView.ItemTemplate>
-                            <DataTemplate>
+                            <DataTemplate x:DataType="x:String">
                                 <Label Text="{Binding}" FontSize="13" FontFamily="Consolas" TextColor="Black" />
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
@@ -128,12 +137,12 @@
                             BindableLayout.ItemsSource="{Binding SelectedTab.Graphs}">
 
                     <BindableLayout.ItemTemplate>
-                        <DataTemplate>
-                            <Frame BackgroundColor="LightGray" Padding="10"
-                                   IsVisible="{Binding IsVisible}"
-                                   HasShadow="False" BorderColor="Gray" CornerRadius="8"
-                                   WidthRequest="{Binding IsExpanded, Converter={StaticResource BoolToSizeConverter}, ConverterParameter=width}"
-                                   HeightRequest="{Binding IsExpanded, Converter={StaticResource BoolToSizeConverter}, ConverterParameter=height}">
+                        <DataTemplate x:DataType="models:GraphModel">
+                            <Border BackgroundColor="LightGray" Padding="10"
+                                    Stroke="Gray" StrokeShape="RoundRectangle 8"
+                                    IsVisible="{Binding IsVisible}"
+                                    WidthRequest="{Binding IsExpanded, Converter={StaticResource BoolToSizeConverter}, ConverterParameter=width}"
+                                    HeightRequest="{Binding IsExpanded, Converter={StaticResource BoolToSizeConverter}, ConverterParameter=height}">
 
                                 <StackLayout>
                                     <Grid ColumnDefinitions="*,Auto,Auto">
@@ -148,10 +157,10 @@
                                     <BoxView BackgroundColor="White"
                                              HeightRequest="{Binding IsExpanded, Converter={StaticResource BoolToSizeConverter}, ConverterParameter=height}"
                                              MinimumHeightRequest="200"
-                                             HorizontalOptions="FillAndExpand"/>
+                                             HorizontalOptions="Fill"/>
                                 </StackLayout>
 
-                            </Frame>
+                            </Border>
                         </DataTemplate>
                     </BindableLayout.ItemTemplate>
                 </FlexLayout>
