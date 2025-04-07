@@ -1,4 +1,4 @@
-﻿using project.Models;
+using project.Models;
 using System.Collections.ObjectModel; // Pro kolekci ObservableCollection, která umožňuje dynamické aktualizace UI
 
 namespace project.Managers;
