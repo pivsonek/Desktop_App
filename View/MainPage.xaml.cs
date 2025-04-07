@@ -16,8 +16,8 @@ namespace project.View;
 public partial class MainPage : ContentPage, INotifyPropertyChanged
 {
     // Správa změny property
-    public event PropertyChangedEventHandler PropertyChanged;
-    private void OnPropertyChanged(string propertyName)
+    public new event PropertyChangedEventHandler? PropertyChanged;
+    private new void OnPropertyChanged(string propertyName)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
@@ -44,8 +44,8 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
     }
 
     // Právě vybraná záložka
-    private GraphTab _selectedTab;
-    public GraphTab SelectedTab
+    private GraphTab? _selectedTab;
+    public GraphTab? SelectedTab
     {
         get => _selectedTab;
         set
@@ -109,7 +109,7 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
     }
 
     // Statická instance MainPage pro snadný přístup k této třídě z jiných tříd.
-    public static MainPage Instance { get; private set; }
+    public static MainPage? Instance { get; private set; }
 
     /// <summary>
     /// Konstruktor hlavní stránky aplikace.
