@@ -13,7 +13,22 @@ public class GraphModel : INotifyPropertyChanged
     // Soukromá proměnná pro název grafu
     private string _name = string.Empty;
 
-    
+    private double _width;
+    public double Width
+    {
+        get => _width;
+        set { _width = value; OnPropertyChanged(nameof(Width)); }
+    }
+
+    private double _height;
+    public double Height
+    {
+        get => _height;
+        set { _height = value; OnPropertyChanged(nameof(Height)); }
+    }
+
+
+
 
     /// <summary>
     /// Název grafu.
