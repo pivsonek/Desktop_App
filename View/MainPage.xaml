@@ -24,7 +24,7 @@
           Padding="10">
 
         <!-- HORNÍ LIŠTA -->
-        <Grid Grid.Row="0" Grid.ColumnSpan="2" ColumnDefinitions="Auto, Auto, *, Auto, Auto" ColumnSpacing="10">
+        <Grid Grid.Row="0" Grid.ColumnSpan="2" ColumnDefinitions="Auto, 1*, 1*,  5*, Auto" ColumnSpacing="10">
             <Button Text="Načíst soubor" FontSize="18"
                     BackgroundColor="DodgerBlue"
                     TextColor="White"
