@@ -1,4 +1,4 @@
-﻿using project.View;
+using project.View;
 using System.ComponentModel; // Pro podporu notifikace změn v UI
 using System.Diagnostics; // Pro ladící výpisy do konzole
 
@@ -13,8 +13,7 @@ public class GraphModel : INotifyPropertyChanged
     // Soukromá proměnná pro název grafu
     private string _name = string.Empty;
 
-    // Soukromá proměnná pro sledování, zda je graf rozbalený (zvětšený)
-    private bool _isExpanded;
+    
 
     /// <summary>
     /// Název grafu.
@@ -32,6 +31,9 @@ public class GraphModel : INotifyPropertyChanged
             }
         }
     }
+    // Soukromá proměnná pro sledování, zda je graf rozbalený (zvětšený)
+    private bool _isExpanded;
+
 
     /// <summary>
     /// Určuje, zda je graf rozbalený (zvětšený).
@@ -42,10 +44,10 @@ public class GraphModel : INotifyPropertyChanged
         get => _isExpanded;
         set
         {
-            if (_isExpanded != value) // Pokud došlo ke změně hodnoty
+            if (_isExpanded != value)
             {
                 _isExpanded = value;
-                OnPropertyChanged(nameof(IsExpanded)); // Notifikace změny
+                OnPropertyChanged(nameof(IsExpanded));
             }
         }
     }
@@ -59,14 +61,13 @@ public class GraphModel : INotifyPropertyChanged
     /// </summary>
     public bool IsVisible
     {
-        get => !MainPage.Instance.IsAnyGraphExpanded || IsExpanded;
+        get => _isVisible;
         set
         {
-            if (_isVisible != value) // Pokud došlo ke změně hodnoty
+            if (_isVisible != value)
             {
                 _isVisible = value;
-                Debug.WriteLine($"Graf viditelnost změněna: {Name} -> {value}"); // Ladící výpis do konzole
-                OnPropertyChanged(nameof(IsVisible)); // Notifikace změny
+                OnPropertyChanged(nameof(IsVisible));
             }
         }
     }

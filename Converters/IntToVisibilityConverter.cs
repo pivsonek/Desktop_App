@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -24,7 +24,7 @@ namespace project.Converters
         /// <param name="parameter">Parametr určující, zda jde o výšku, šířku nebo počet sloupců.</param>
         /// <param name="culture">Kultura (nepoužívá se).</param>
         /// <returns>Vrací dynamicky vypočítanou velikost prvku na základě stavu rozbalení.</returns>
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             if (value is int count)
             {
@@ -50,7 +50,7 @@ namespace project.Converters
         /// <param name="parameter">Volitelný parametr.</param>
         /// <param name="culture">Kultura.</param>
         /// <returns>Vrací Binding.DoNothing, což zabraňuje chybám při zpětné konverzi.</returns>
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
         }

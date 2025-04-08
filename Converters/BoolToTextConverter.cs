@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Globalization; // Pro podporu lokalizace (kultura převodu)
 using Microsoft.Maui.Controls;
 
@@ -31,7 +31,7 @@ namespace project.Converters
         /// <param name="parameter">Volitelný parametr.</param>
         /// <param name="culture">Kultura.</param>
         /// <returns>Vrací Binding.DoNothing, což zabraňuje chybám při zpětné konverzi.</returns>
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             return Binding.DoNothing; // Zabrání pokusu o zpětnou konverzi, protože není potřeba
         }
