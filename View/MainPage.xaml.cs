@@ -7,6 +7,8 @@ using System.ComponentModel;
 using project.Services;
 using project.Managers;
 using project.Models;
+using project.Converters;
+
 
 namespace project.View;
 
@@ -164,6 +166,7 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
             Tabs.Add(newTab);
             SelectedTab = newTab;
         }
+        RecalculateGraphSizes();
     }
 
 
@@ -177,6 +180,7 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
             int nextNumber = SelectedTab.Graphs.Count + 1;
             SelectedTab.Graphs.Add(new GraphModel { Name = $"Graf {nextNumber}" });
             UpdateGraphVisibility();
+            RecalculateGraphSizes();
         }
     }
 
@@ -203,9 +207,8 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
             }
 
             UpdateGraphVisibility();
-
-            // Ujistíme se, že UI si toho všimne
             OnPropertyChanged(nameof(SelectedTab));
+            RecalculateGraphSizes();
         }
     }
 
@@ -307,6 +310,54 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
             OnPropertyChanged(nameof(Tabs));
             OnPropertyChanged(nameof(Tabs.Count));
             OnPropertyChanged(nameof(SelectedTab));
+            RecalculateGraphSizes();
+        }
+    }
+
+    protected override void OnSizeAllocated(double width, double height)
+    {
+        base.OnSizeAllocated(width, height);
+        RecalculateGraphSizes();
+
+        double leftPanelWidth = 300;
+        double padding = 40;
+        double rightAvailableWidth = width - leftPanelWidth - padding;
+        double usableHeight = height - 120;
+
+        if (SelectedTab?.Graphs is null)
+            return;
+
+        foreach (var graph in SelectedTab.Graphs)
+        {
+            graph.Width = graph.IsExpanded
+                ? rightAvailableWidth - 20
+                : rightAvailableWidth / 2 - 20;
+
+            graph.Height = graph.IsExpanded
+                ? usableHeight * 0.95
+                : usableHeight * 0.5;
+        }
+    }
+
+    private void RecalculateGraphSizes()
+    {
+        double leftPanelWidth = 300;
+        double padding = 40;
+        double rightAvailableWidth = Width - leftPanelWidth - padding;
+        double usableHeight = Height - 100;
+
+        if (SelectedTab?.Graphs is null)
+            return;
+
+        foreach (var graph in SelectedTab.Graphs)
+        {
+            graph.Width = graph.IsExpanded
+                ? rightAvailableWidth - 20
+                : rightAvailableWidth / 2 - 20;
+
+            graph.Height = graph.IsExpanded
+                ? usableHeight
+                : usableHeight * 0.5;
         }
     }
 }
