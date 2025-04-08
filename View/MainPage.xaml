@@ -82,7 +82,6 @@
 
         <!-- LEVÝ PANEL -->
         <Grid Grid.Row="1" Grid.Column="0"
-              IsVisible="{Binding IsAnyGraphExpanded, Converter={StaticResource BoolToSizeConverter}, ConverterParameter=visibility}"
               RowDefinitions="*,*"
               WidthRequest="300"
               Padding="5"
@@ -126,11 +125,11 @@
                     VerticalScrollBarVisibility="{Binding IsAnyGraphExpanded, Converter={StaticResource BoolToScrollVisibilityConverter}}"
                     HorizontalScrollBarVisibility="Never">
 
-            <Grid RowDefinitions="*, Auto">
+            <!-- StackLayout se postará o vertikální růst obsahu -->
+            <StackLayout>
 
                 <!-- GRAFY -->
-                <FlexLayout Grid.Row="0"
-                            Direction="Row"
+                <FlexLayout Direction="Row"
                             Wrap="Wrap"
                             JustifyContent="Start"
                             AlignItems="Start"
@@ -138,11 +137,14 @@
 
                     <BindableLayout.ItemTemplate>
                         <DataTemplate x:DataType="models:GraphModel">
-                            <Border BackgroundColor="LightGray" Padding="10"
-                                    Stroke="Gray" StrokeShape="RoundRectangle 8"
+                            <Border BackgroundColor="LightGray" 
+                                    Padding="10"
+                                    Stroke="Gray" 
+                                    StrokeShape="RoundRectangle 8"
                                     IsVisible="{Binding IsVisible}"
-                                    WidthRequest="{Binding IsExpanded, Converter={StaticResource BoolToSizeConverter}, ConverterParameter=width}"
-                                    HeightRequest="{Binding IsExpanded, Converter={StaticResource BoolToSizeConverter}, ConverterParameter=height}">
+                                    WidthRequest="{Binding Width}"
+                                    HeightRequest="{Binding Height}"
+                                    MinimumHeightRequest="200">
 
                                 <StackLayout>
                                     <Grid ColumnDefinitions="*,Auto,Auto">
@@ -155,7 +157,7 @@
                                     </Grid>
 
                                     <BoxView BackgroundColor="White"
-                                             HeightRequest="{Binding IsExpanded, Converter={StaticResource BoolToSizeConverter}, ConverterParameter=height}"
+                                             HeightRequest="{Binding Height}"
                                              MinimumHeightRequest="200"
                                              HorizontalOptions="Fill"/>
                                 </StackLayout>
@@ -168,10 +170,10 @@
                 <!-- TLAČÍTKO + -->
                 <Button Text="+" FontSize="24" WidthRequest="50" HeightRequest="50"
                         CornerRadius="25" BackgroundColor="DodgerBlue" TextColor="White"
-                        HorizontalOptions="Center" Margin="0,20,0,0" Grid.Row="1"
+                        HorizontalOptions="Center" Margin="0,20,0,0"
                         IsVisible="{Binding IsAnyGraphExpanded, Converter={StaticResource BoolToSizeConverter}, ConverterParameter=invert}"
                         Clicked="OnAddGraphClicked"/>
-            </Grid>
+            </StackLayout>
         </ScrollView>
     </Grid>
 </ContentPage>

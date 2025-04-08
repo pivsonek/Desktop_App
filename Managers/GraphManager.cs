@@ -55,7 +55,7 @@ public class GraphManager
     {
         if (graph != null) // Kontrola, zda je graf platný
         {
-            graph.IsExpanded = !graph.IsExpanded; // Přepnutí stavu (zvětšený <-> zmenšený)
+            graph.IsExpanded = !graph.IsExpanded; // Přepnutí stavu
         }
     }
 }
