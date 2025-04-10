@@ -12,6 +12,10 @@ namespace project.Models
         public string? FileName { get; set; }   // Název souboru
         public ObservableCollection<GraphModel> Graphs { get; set; } = new(); // Kolekce grafů
         public ObservableCollection<string> DisplayData { get; set; } = new(); // kolekce pro zobrazení dat
+
+        public ObservableCollection<string> FilteredDisplayData { get; set; } = new(); // kolekce pro zobrazení filtrovaných dat
         public MeasureData MeasureData { get; set; } = new(); // Data měření
+
+        public FilteredData? FilteredData { get; set; } // Filtrovaná data
     }
 }

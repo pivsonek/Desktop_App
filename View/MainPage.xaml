@@ -91,15 +91,26 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
+
                 <Label Text="Data pro zobrazení" FontSize="16" FontAttributes="Bold" TextColor="Black" Grid.Row="0"/>
-                <ListView x:Name="DataListView" ItemsSource="{Binding DataItems}" Grid.Row="1" BackgroundColor="White">
-                    <ListView.ItemTemplate>
-                        <DataTemplate x:DataType="x:String">
-                            <TextCell Text="{Binding}" />
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
+
+                <ScrollView Orientation="Both" Grid.Row="1" HorizontalScrollBarVisibility="Always">
+                    <CollectionView ItemsSource="{Binding SelectedTab.FilteredDisplayData}"
+                                    VerticalScrollBarVisibility="Always"
+                                    HeightRequest="300">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="x:String">
+                                <Label Text="{Binding}" 
+                                       FontSize="13" 
+                                       FontFamily="Consolas" 
+                                       TextColor="Black" 
+                                       Padding="5"/>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </ScrollView>
             </Grid>
+            
             <Grid Grid.Row="1" BackgroundColor="LightSkyBlue" Padding="10">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>

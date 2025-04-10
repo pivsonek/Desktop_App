@@ -83,9 +83,6 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
         }
     }
 
-    // Kolekce pro ukládání načtených dat z textového souboru.
-    public ObservableCollection<string> DataItems { get; set; } = new();
-
     // Proměnné pro řízení vstupu uživatele, kdy jeden vstup zamyká druhý.
     private bool _isFrequencyEnabled = true;
     private bool _isTemperatureEnabled = true;
@@ -270,17 +267,45 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
     /// <summary>
     /// Simuluje hledání dat na základě zadané teploty.
     /// </summary>
-    private void OnTemperatureSearch(object sender, EventArgs e)
+    private async void OnTemperatureSearch(object sender, EventArgs e)
     {
-        Console.WriteLine("Hledání teploty bylo spuštěno.");
+        if (SelectedTab == null || TemperatureSearchBar == null) return;
+
+        if (double.TryParse(TemperatureSearchBar.Text, out double temp))
+        {
+            SelectedTab.FilteredData = new FilteredData("temperature", temp, SelectedTab.MeasureData);
+
+            // aktualizuj zobrazení
+            var lines = await SelectedTab.FilteredData.MakeToStringAsync(0);
+
+            SelectedTab.FilteredDisplayData.Clear();
+            foreach (var line in lines)
+            {
+                SelectedTab.FilteredDisplayData.Add(line);
+            }
+        }
     }
 
     /// <summary>
     /// Simuluje hledání dat na základě zadané frekvence.
     /// </summary>
-    private void OnFrequencySearch(object sender, EventArgs e)
+    private async void OnFrequencySearch(object sender, EventArgs e)
     {
-        Console.WriteLine("Hledání frekvence bylo spuštěno.");
+        if (SelectedTab == null || FrequencySearchBar == null) return;
+
+        if (double.TryParse(FrequencySearchBar.Text, out double freq))
+        {
+            SelectedTab.FilteredData = new FilteredData("frequency", freq, SelectedTab.MeasureData);
+
+            // aktualizuj zobrazení
+            var lines = await SelectedTab.FilteredData.MakeToStringAsync(0);
+
+            SelectedTab.FilteredDisplayData.Clear();
+            foreach (var line in lines)
+            {
+                SelectedTab.FilteredDisplayData.Add(line);
+            }
+        }
     }
 
     /// <summary>
@@ -360,4 +385,34 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
                 : usableHeight * 0.5;
         }
     }
+
+    private void UpdateFilteredDisplayData(IEnumerable<Data> data)
+    {
+        if (SelectedTab == null) return;
+
+        var target = SelectedTab.FilteredDisplayData;
+        target.Clear();
+
+        var extraKeys = data.SelectMany(d => d.extraValues.Keys).Distinct().ToArray();
+        var header = new List<string> { "Frequency", "Temperature" };
+        header.AddRange(extraKeys);
+        target.Add(string.Join("\t", header));
+
+        foreach (var d in data)
+        {
+            List<string> row = new()
+        {
+            d.Frequency.ToString("E2"),
+            d.Temperature.ToString("E2")
+        };
+
+            foreach (var key in extraKeys)
+            {
+                row.Add(d.extraValues.TryGetValue(key, out double val) ? val.ToString("E2") : "-");
+            }
+
+            target.Add(string.Join("\t", row));
+        }
+    }
+
 }
