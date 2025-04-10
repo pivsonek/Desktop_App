@@ -8,6 +8,7 @@ using project.Services;
 using project.Managers;
 using project.Models;
 using project.Converters;
+using System.Globalization;
 
 
 namespace project.View;
@@ -251,7 +252,6 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
     /// </summary>
     private void OnTemperatureTextChanged(object sender, TextChangedEventArgs e)
     {
-        Console.WriteLine($"Teplota změněna: {e.NewTextValue}");
         IsFrequencyEnabled = string.IsNullOrWhiteSpace(e.NewTextValue); // Zamknutí frekvence
     }
 
@@ -260,7 +260,6 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
     /// </summary>
     private void OnFrequencyTextChanged(object sender, TextChangedEventArgs e)
     {
-        Console.WriteLine($"Frekvence změněna: {e.NewTextValue}");
         IsTemperatureEnabled = string.IsNullOrWhiteSpace(e.NewTextValue); // Zamknutí teploty
     }
 
@@ -323,63 +322,100 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
             "OK");
     }
 
+    /// <summary>
+    /// Handler pro zavření záložky s grafy.
+    /// Odstraní záložku z kolekce `Tabs`, nastaví nově aktivní záložku
+    /// a přepočítá rozměry zobrazených grafů.
+    /// </summary>
     private void OnCloseTabClicked(object sender, EventArgs e)
     {
+        // Ověření, že tlačítko má vázaný datový kontext typu GraphTab
         if (sender is Button button && button.BindingContext is GraphTab tab)
         {
+            // Odebere záložku ze seznamu
             Tabs.Remove(tab);
 
+            // Pokud nějaké záložky zůstaly, nastaví první z nich jako aktivní
             SelectedTab = Tabs.FirstOrDefault();
-                
 
+            // Notifikace změn pro UI – aktualizace bindingů
             OnPropertyChanged(nameof(Tabs));
             OnPropertyChanged(nameof(Tabs.Count));
             OnPropertyChanged(nameof(SelectedTab));
+
+            // Přepočítání rozměrů grafů podle nového výběru záložky
             RecalculateGraphSizes();
         }
     }
 
+
+    /// <summary>
+    /// Přepis metody, která se volá při změně velikosti okna.
+    /// Slouží k přizpůsobení velikosti grafů podle aktuální šířky a výšky.
+    /// </summary>
     protected override void OnSizeAllocated(double width, double height)
     {
         base.OnSizeAllocated(width, height);
+
+        // Přepočet velikostí grafů
         RecalculateGraphSizes();
 
+        // Definice velikosti levého panelu (sidebaru) a mezery
         double leftPanelWidth = 300;
         double padding = 40;
-        double rightAvailableWidth = width - leftPanelWidth - padding;
-        double usableHeight = height - 120;
 
+        // Vypočítání dostupného prostoru pro oblast s grafy
+        double rightAvailableWidth = width - leftPanelWidth - padding;
+        double usableHeight = height - 120; // odečteme horní část s horní lištou
+
+        // Pokud nejsou žádné grafy nebo záložka není vybraná, končíme
         if (SelectedTab?.Graphs is null)
             return;
 
+        // Pro každý graf v záložce nastavíme šířku a výšku podle stavu zvětšení
         foreach (var graph in SelectedTab.Graphs)
         {
+            // Pokud je graf rozbalený, zabírá celou šířku; jinak půlku
             graph.Width = graph.IsExpanded
                 ? rightAvailableWidth - 20
                 : rightAvailableWidth / 2 - 20;
 
+            // Výška se přizpůsobí podobně – větší pro rozbalený graf
             graph.Height = graph.IsExpanded
                 ? usableHeight * 0.95
                 : usableHeight * 0.5;
         }
     }
 
+
+    /// <summary>
+    /// Pomocná metoda, která přepočítává rozměry všech grafů
+    /// na základě aktuální velikosti okna a stavu zvětšení jednotlivých grafů.
+    /// Volá se např. při změně záložky nebo přidání grafu.
+    /// </summary>
     private void RecalculateGraphSizes()
     {
+        // Konstanty určující levý panel a mezery
         double leftPanelWidth = 300;
         double padding = 40;
+
+        // Výpočet dostupné šířky a výšky pro oblast grafů
         double rightAvailableWidth = Width - leftPanelWidth - padding;
         double usableHeight = Height - 100;
 
+        // Pokud nejsou žádné grafy nebo žádná záložka není vybraná, neděláme nic
         if (SelectedTab?.Graphs is null)
             return;
 
+        // Pro každý graf nastavíme jeho velikost
         foreach (var graph in SelectedTab.Graphs)
         {
+            // Zvětšený graf má větší šířku, ostatní se zmenší
             graph.Width = graph.IsExpanded
                 ? rightAvailableWidth - 20
                 : rightAvailableWidth / 2 - 20;
 
+            // Výška grafu podle stavu rozbalení
             graph.Height = graph.IsExpanded
                 ? usableHeight
                 : usableHeight * 0.5;
