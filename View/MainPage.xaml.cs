@@ -19,6 +19,43 @@ namespace project.View;
 /// </summary>
 public partial class MainPage : ContentPage, INotifyPropertyChanged
 {
+    /// <summary>
+    /// Vstupní hodnota z teplotního SearchBaru.
+    /// Tato property je svázaná s právě vybranou záložkou (SelectedTab),
+    /// takže každý tab si uchovává svůj vlastní vstup.
+    /// </summary>
+    public string TemperatureInput
+    {
+        get => SelectedTab?.TemperatureInput ?? string.Empty; // Pokud je vybraná záložka, vrátí její hodnotu; jinak prázdný řetězec
+        set
+        {
+            if (SelectedTab != null)
+            {
+                SelectedTab.TemperatureInput = value; // Uloží hodnotu do aktivní záložky
+                OnPropertyChanged(nameof(TemperatureInput)); // Oznámí změnu pro binding
+            }
+        }
+    }
+
+    /// <summary>
+    /// Vstupní hodnota z frekvenčního SearchBaru.
+    /// Stejně jako u teploty, tato property je navázaná na aktuální tab.
+    /// Díky tomu je každý vstup oddělený podle záložek.
+    /// </summary>
+    public string FrequencyInput
+    {
+        get => SelectedTab?.FrequencyInput ?? string.Empty;
+        set
+        {
+            if (SelectedTab != null)
+            {
+                SelectedTab.FrequencyInput = value;
+                OnPropertyChanged(nameof(FrequencyInput));
+            }
+        }
+    }
+
+
     // Notifikace změny property – nutná pro binding
     public new event PropertyChangedEventHandler? PropertyChanged;
     private new void OnPropertyChanged(string propertyName)
@@ -58,6 +95,9 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
                 _selectedTab = value;
                 OnPropertyChanged(nameof(SelectedTab));
                 OnPropertyChanged(nameof(SelectedTab.Graphs));
+
+                OnPropertyChanged(nameof(TemperatureInput));
+                OnPropertyChanged(nameof(FrequencyInput));
             }
         }
     }
@@ -126,6 +166,7 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
             OnPropertyChanged(nameof(Tabs));
             OnPropertyChanged(nameof(Tabs.Count));
         };
+
     }
 
     /// <summary>
@@ -374,10 +415,16 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
         var temps = SelectedTab.MeasureData.FileData
             .Select(d => d.Temperature.ToString())
             .Distinct()
-            .Where(t => t.StartsWith(input));
+            .Where(t => t.StartsWith(input))
+            .ToList();
+
+        if (temps.Count == 1 && temps[0] == input)
+            return;
 
         foreach (var t in temps)
             TemperatureSuggestions.Add(t);
+
+        TemperatureDropdown.HeightRequest = Math.Min(TemperatureSuggestions.Count * 40, 200);
     }
 
     /// <summary>
@@ -392,10 +439,16 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
         var freqs = SelectedTab.MeasureData.FileData
             .Select(d => d.Frequency.ToString())
             .Distinct()
-            .Where(f => f.StartsWith(input));
+            .Where(f => f.StartsWith(input))
+            .ToList();
+
+        if (freqs.Count == 1 && freqs[0] == input)
+            return;
 
         foreach (var f in freqs)
             FrequencySuggestions.Add(f);
+
+        FrequencyDropdown.HeightRequest = Math.Min(FrequencySuggestions.Count * 40, 200);
     }
 
     /// <summary>
@@ -423,4 +476,5 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
             OnFrequencySearch(sender, EventArgs.Empty);
         }
     }
+
 }
