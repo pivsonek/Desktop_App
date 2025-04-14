@@ -363,38 +363,6 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
     // --- metody pro suggestions a jejich výběr ---
 
     /// <summary>
-    /// Naplní kolekci FilteredDisplayData daty, včetně záhlaví a všech extra hodnot
-    /// </summary>
-    private void UpdateFilteredDisplayData(IEnumerable<Data> data)
-    {
-        if (SelectedTab == null) return;
-
-        var target = SelectedTab.FilteredDisplayData;
-        target.Clear();
-
-        var extraKeys = data.SelectMany(d => d.extraValues.Keys).Distinct().ToArray();
-        var header = new List<string> { "Frequency", "Temperature" };
-        header.AddRange(extraKeys);
-        target.Add(string.Join("\t", header));
-
-        foreach (var d in data)
-        {
-            List<string> row = new()
-            {
-                d.Frequency.ToString("E2"),
-                d.Temperature.ToString("E2")
-            };
-
-            foreach (var key in extraKeys)
-            {
-                row.Add(d.extraValues.TryGetValue(key, out double val) ? val.ToString("E2") : "-");
-            }
-
-            target.Add(string.Join("\t", row));
-        }
-    }
-
-    /// <summary>
     /// Na základě vstupu v teplotním SearchBaru připraví návrhy hodnot
     /// </summary>
     private void UpdateTemperatureSuggestions(string input)
@@ -404,7 +372,7 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
         if (SelectedTab?.MeasureData?.FileData == null || string.IsNullOrWhiteSpace(input)) return;
 
         var temps = SelectedTab.MeasureData.FileData
-            .Select(d => d.Temperature.ToString("E2"))
+            .Select(d => d.Temperature.ToString())
             .Distinct()
             .Where(t => t.StartsWith(input));
 
@@ -422,7 +390,7 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
         if (SelectedTab?.MeasureData?.FileData == null || string.IsNullOrWhiteSpace(input)) return;
 
         var freqs = SelectedTab.MeasureData.FileData
-            .Select(d => d.Frequency.ToString("E2"))
+            .Select(d => d.Frequency.ToString())
             .Distinct()
             .Where(f => f.StartsWith(input));
 
