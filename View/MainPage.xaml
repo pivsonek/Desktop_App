@@ -26,8 +26,8 @@
         <Grid Grid.Row="0" Grid.ColumnSpan="2" HeightRequest="80" RowSpacing="5" ZIndex="100">
             <!-- 2 řádky: 0 = hlavní řádek (searchbary atd.), 1 = dropdowny -->
             <Grid.RowDefinitions>
-                <RowDefinition Height="80"/>
-                <RowDefinition Height="60"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
@@ -53,23 +53,25 @@
 
             <!-- Teplota SearchBar -->
             <SearchBar x:Name="TemperatureSearchBar"
-               Grid.Row="0" Grid.Column="1"
-               Placeholder="Teplota [°C]"
-               TextColor="Black"
-               PlaceholderColor="Gray"
-               SearchButtonPressed="OnTemperatureSearch"
-               TextChanged="OnTemperatureTextChanged"
-               IsEnabled="{Binding IsTemperatureEnabled}" />
+                       Text="{Binding TemperatureInput, Mode=TwoWay}"
+                       Grid.Row="0" Grid.Column="1"
+                       Placeholder="Teplota [°C]"
+                       TextColor="Black"
+                       PlaceholderColor="Gray"
+                       SearchButtonPressed="OnTemperatureSearch"
+                       TextChanged="OnTemperatureTextChanged"
+                       IsEnabled="{Binding IsTemperatureEnabled}" />
 
             <!-- Frekvence SearchBar -->
             <SearchBar x:Name="FrequencySearchBar"
-               Grid.Row="0" Grid.Column="2"
-               Placeholder="Frekvence [Hz]"
-               TextColor="Black"
-               PlaceholderColor="Gray"
-               SearchButtonPressed="OnFrequencySearch"
-               TextChanged="OnFrequencyTextChanged"
-               IsEnabled="{Binding IsFrequencyEnabled}" />
+                       Text="{Binding FrequencyInput, Mode=TwoWay}"
+                       Grid.Row="0" Grid.Column="2"
+                       Placeholder="Frekvence [Hz]"
+                       TextColor="Black"
+                       PlaceholderColor="Gray"
+                       SearchButtonPressed="OnFrequencySearch"
+                       TextChanged="OnFrequencyTextChanged"
+                       IsEnabled="{Binding IsFrequencyEnabled}" />
 
             <!-- Tabs -->
             <ScrollView Grid.Row="0" Grid.Column="3" Orientation="Horizontal">
@@ -128,13 +130,13 @@
 
             <!-- Dropdown: Teplota -->
             <CollectionView x:Name="TemperatureDropdown"
-                    Grid.Row="1" Grid.Column="1"
-                    ItemsSource="{Binding TemperatureSuggestions}"
-                    SelectionMode="Single"
-                    SelectionChanged="OnTemperatureSuggestionSelected"
-                    IsVisible="{Binding TemperatureSuggestions.Count, Converter={StaticResource IntToVisibilityConverter}}"
-                    BackgroundColor="LightYellow"
-                    VerticalScrollBarVisibility="Always">
+                            Grid.Row="1" Grid.Column="1"
+                            ItemsSource="{Binding TemperatureSuggestions}"
+                            SelectionMode="Single"
+                            SelectionChanged="OnTemperatureSuggestionSelected"
+                            IsVisible="{Binding TemperatureSuggestions.Count, Converter={StaticResource IntToVisibilityConverter}}"
+                            BackgroundColor="LightYellow"
+                            VerticalScrollBarVisibility="Always">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
                         <Label Text="{Binding}" Padding="10" TextColor="DarkRed" FontAttributes="Bold"/>
@@ -144,13 +146,13 @@
 
             <!-- Dropdown: Frekvence -->
             <CollectionView x:Name="FrequencyDropdown"
-                    Grid.Row="1" Grid.Column="2"
-                    ItemsSource="{Binding FrequencySuggestions}"
-                    SelectionMode="Single"
-                    SelectionChanged="OnFrequencySuggestionSelected"
-                    IsVisible="{Binding FrequencySuggestions.Count, Converter={StaticResource IntToVisibilityConverter}}"
-                    BackgroundColor="LightYellow"
-                    VerticalScrollBarVisibility="Always">
+                            Grid.Row="1" Grid.Column="2"
+                            ItemsSource="{Binding FrequencySuggestions}"
+                            SelectionMode="Single"
+                            SelectionChanged="OnFrequencySuggestionSelected"
+                            IsVisible="{Binding FrequencySuggestions.Count, Converter={StaticResource IntToVisibilityConverter}}"
+                            BackgroundColor="LightYellow"
+                            VerticalScrollBarVisibility="Always">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
                         <Label Text="{Binding}" Padding="10" TextColor="DarkRed" FontAttributes="Bold"/>
@@ -177,7 +179,7 @@
                 <ScrollView Orientation="Both" Grid.Row="1" HorizontalScrollBarVisibility="Always">
                     <CollectionView ItemsSource="{Binding SelectedTab.FilteredDisplayData}"
                                     VerticalScrollBarVisibility="Always"
-                                    HeightRequest="300">
+                                    HeightRequest="500">
                         <CollectionView.ItemTemplate>
                             <DataTemplate x:DataType="x:String">
                                 <Label Text="{Binding}" 
@@ -200,7 +202,7 @@
                 <ScrollView Orientation="Both" Grid.Row="1" HorizontalScrollBarVisibility="Always">
                     <CollectionView ItemsSource="{Binding SelectedTab.DisplayData}"
                                     VerticalScrollBarVisibility="Always"
-                                    HeightRequest="300">
+                                    HeightRequest="500">
                         <CollectionView.ItemTemplate>
                             <DataTemplate x:DataType="x:String">
                                 <Label Text="{Binding}" FontSize="13" FontFamily="Consolas" TextColor="Black" />
