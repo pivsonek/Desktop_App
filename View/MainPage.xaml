@@ -4,7 +4,6 @@
              xmlns:models="clr-namespace:project.Models"
              xmlns:view="clr-namespace:project.View"
              x:Class="project.View.MainPage"
-             x:DataType="view:MainPage"
              Title="Analýza dat"
              BackgroundColor="White">
 
@@ -24,61 +23,144 @@
           Padding="10">
 
         <!-- HORNÍ LIŠTA -->
-        <Grid Grid.Row="0" Grid.ColumnSpan="2" ColumnDefinitions="Auto, 1*, 1*,  5*, Auto" ColumnSpacing="10">
-            <Button Text="Načíst soubor" FontSize="18"
-                    BackgroundColor="DodgerBlue"
-                    TextColor="White"
-                    Grid.Column="0"
-                    Clicked="OnLoadFileClicked"/>
+        <Grid Grid.Row="0" Grid.ColumnSpan="2" HeightRequest="80" RowSpacing="5" ZIndex="100">
+            <!-- 2 řádky: 0 = hlavní řádek (searchbary atd.), 1 = dropdowny -->
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <!-- Načíst soubor -->
+                <ColumnDefinition Width="*"/>
+                <!-- Teplota -->
+                <ColumnDefinition Width="*"/>
+                <!-- Frekvence -->
+                <ColumnDefinition Width="5*"/>
+                <!-- Tabs -->
+                <ColumnDefinition Width="Auto"/>
+                <!-- Help -->
+            </Grid.ColumnDefinitions>
+
+            <!-- Načíst soubor -->
+            <Button Text="Načíst soubor"
+            WidthRequest="180"
+            FontSize="18"
+            BackgroundColor="DodgerBlue"
+            TextColor="White"
+            Grid.Row="0" Grid.Column="0"
+            Clicked="OnLoadFileClicked"/>
+
+            <!-- Teplota SearchBar -->
             <SearchBar x:Name="TemperatureSearchBar"
+                       Text="{Binding TemperatureInput, Mode=TwoWay}"
+                       Grid.Row="0" Grid.Column="1"
                        Placeholder="Teplota [°C]"
-                       Grid.Column="1"
                        TextColor="Black"
                        PlaceholderColor="Gray"
                        SearchButtonPressed="OnTemperatureSearch"
                        TextChanged="OnTemperatureTextChanged"
-                       IsEnabled="{Binding IsTemperatureEnabled}"/>
+                       IsEnabled="{Binding IsTemperatureEnabled}" />
+
+            <!-- Frekvence SearchBar -->
             <SearchBar x:Name="FrequencySearchBar"
+                       Text="{Binding FrequencyInput, Mode=TwoWay}"
+                       Grid.Row="0" Grid.Column="2"
                        Placeholder="Frekvence [Hz]"
-                       Grid.Column="2"
                        TextColor="Black"
                        PlaceholderColor="Gray"
                        SearchButtonPressed="OnFrequencySearch"
                        TextChanged="OnFrequencyTextChanged"
-                       IsEnabled="{Binding IsFrequencyEnabled}"/>
-            <ScrollView Grid.Column="3" Orientation="Horizontal">
+                       IsEnabled="{Binding IsFrequencyEnabled}" />
+
+            <!-- Tabs -->
+            <ScrollView Grid.Row="0" Grid.Column="3" Orientation="Horizontal">
                 <Grid>
-                    <CollectionView ItemsSource="{Binding Tabs}" SelectionMode="Single"
-                                    SelectedItem="{Binding SelectedTab, Mode=TwoWay}"
-                                    WidthRequest="500"
-                                    IsVisible="{Binding Tabs.Count, Converter={StaticResource IntToVisibilityConverter}}">
+                    <CollectionView ItemsSource="{Binding Tabs}"
+                            SelectionMode="Single"
+                            SelectedItem="{Binding SelectedTab, Mode=TwoWay}"
+                            WidthRequest="500"
+                            IsVisible="{Binding Tabs.Count, Converter={StaticResource IntToVisibilityConverter}}">
                         <CollectionView.ItemsLayout>
                             <LinearItemsLayout Orientation="Horizontal"/>
                         </CollectionView.ItemsLayout>
                         <CollectionView.ItemTemplate>
                             <DataTemplate x:DataType="models:GraphTab">
-                                <Border Stroke="DarkGray" StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="5">
+                                <Border Stroke="DarkGray"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 10"
+                                Padding="5">
                                     <Grid ColumnDefinitions="*, Auto" ColumnSpacing="5">
-                                        <Label Text="{Binding FileName}" FontSize="14" TextColor="Black"
-                                               VerticalOptions="Center" Padding="5" Grid.Column="0"/>
-                                        <Button Text="X" FontSize="12" BackgroundColor="Red" TextColor="White"
-                                                Padding="2" Clicked="OnCloseTabClicked" CommandParameter="{Binding .}" Grid.Column="1"/>
+                                        <Label Text="{Binding FileName}"
+                                       FontSize="14"
+                                       TextColor="Black"
+                                       VerticalOptions="Center"
+                                       Padding="5"
+                                       Grid.Column="0"/>
+                                        <Button Text="X"
+                                        FontSize="12"
+                                        BackgroundColor="Red"
+                                        TextColor="White"
+                                        Padding="2"
+                                        Clicked="OnCloseTabClicked"
+                                        CommandParameter="{Binding .}"
+                                        Grid.Column="1"/>
                                     </Grid>
                                 </Border>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
                     </CollectionView>
-                    <Label Text="Žádný soubor nenačten" FontSize="18" TextColor="Gray"
-                           VerticalOptions="Center" Padding="10"
-                           IsVisible="{Binding Tabs.Count, Converter={StaticResource IntToVisibilityConverter}, ConverterParameter=invert}"/>
+                    <Label Text="Žádný soubor nenačten"
+                   FontSize="18"
+                   TextColor="Gray"
+                   VerticalOptions="Center"
+                   Padding="10"
+                   IsVisible="{Binding Tabs.Count, Converter={StaticResource IntToVisibilityConverter}, ConverterParameter=invert}"/>
                 </Grid>
             </ScrollView>
-            <Button Text="Help" FontSize="18"
-                    BackgroundColor="DarkOrange"
-                    TextColor="White"
-                    Grid.Column="4"
-                    Clicked="OnHelpClicked"/>
+
+            <!-- Help -->
+            <Button Text="Help"
+            WidthRequest="100"
+            FontSize="18"
+            BackgroundColor="DarkOrange"
+            TextColor="White"
+            Grid.Row="0" Grid.Column="4"
+            Clicked="OnHelpClicked"/>
+
+            <!-- Dropdown: Teplota -->
+            <CollectionView x:Name="TemperatureDropdown"
+                            Grid.Row="1" Grid.Column="1"
+                            ItemsSource="{Binding TemperatureSuggestions}"
+                            SelectionMode="Single"
+                            SelectionChanged="OnTemperatureSuggestionSelected"
+                            IsVisible="{Binding TemperatureSuggestions.Count, Converter={StaticResource IntToVisibilityConverter}}"
+                            BackgroundColor="LightYellow"
+                            VerticalScrollBarVisibility="Always">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Label Text="{Binding}" Padding="10" TextColor="DarkRed" FontAttributes="Bold"/>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <!-- Dropdown: Frekvence -->
+            <CollectionView x:Name="FrequencyDropdown"
+                            Grid.Row="1" Grid.Column="2"
+                            ItemsSource="{Binding FrequencySuggestions}"
+                            SelectionMode="Single"
+                            SelectionChanged="OnFrequencySuggestionSelected"
+                            IsVisible="{Binding FrequencySuggestions.Count, Converter={StaticResource IntToVisibilityConverter}}"
+                            BackgroundColor="LightYellow"
+                            VerticalScrollBarVisibility="Always">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Label Text="{Binding}" Padding="10" TextColor="DarkRed" FontAttributes="Bold"/>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
         </Grid>
+
 
         <!-- LEVÝ PANEL -->
         <Grid Grid.Row="1" Grid.Column="0"
@@ -97,7 +179,7 @@
                 <ScrollView Orientation="Both" Grid.Row="1" HorizontalScrollBarVisibility="Always">
                     <CollectionView ItemsSource="{Binding SelectedTab.FilteredDisplayData}"
                                     VerticalScrollBarVisibility="Always"
-                                    HeightRequest="300">
+                                    HeightRequest="500">
                         <CollectionView.ItemTemplate>
                             <DataTemplate x:DataType="x:String">
                                 <Label Text="{Binding}" 
@@ -111,7 +193,7 @@
                 </ScrollView>
             </Grid>
             
-            <Grid Grid.Row="1" BackgroundColor="LightSkyBlue" Padding="10">
+            <Grid Grid.Row="1" BackgroundColor="Gainsboro" Padding="10">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
@@ -120,7 +202,7 @@
                 <ScrollView Orientation="Both" Grid.Row="1" HorizontalScrollBarVisibility="Always">
                     <CollectionView ItemsSource="{Binding SelectedTab.DisplayData}"
                                     VerticalScrollBarVisibility="Always"
-                                    HeightRequest="300">
+                                    HeightRequest="500">
                         <CollectionView.ItemTemplate>
                             <DataTemplate x:DataType="x:String">
                                 <Label Text="{Binding}" FontSize="13" FontFamily="Consolas" TextColor="Black" />
