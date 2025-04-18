@@ -1,3 +1,4 @@
+// Using statements – základní importy
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -9,12 +10,6 @@ using project.Managers;
 using project.Models;
 using project.Converters;
 using System.Globalization;
-using LiveChartsCore.Defaults;
-using LiveChartsCore.SkiaSharpView;
-using LiveChartsCore;
-using LiveChartsCore.SkiaSharpView.Painting;
-using SkiaSharp;
-using LiveChartsCore.Kernel;
 
 
 namespace project.View;
@@ -24,19 +19,55 @@ namespace project.View;
 /// </summary>
 public partial class MainPage : ContentPage, INotifyPropertyChanged
 {
-    // Správa změny property
+    /// <summary>
+    /// Vstupní hodnota z teplotního SearchBaru.
+    /// Tato property je svázaná s právě vybranou záložkou (SelectedTab),
+    /// takže každý tab si uchovává svůj vlastní vstup.
+    /// </summary>
+    public string TemperatureInput
+    {
+        get => SelectedTab?.TemperatureInput ?? string.Empty; // Pokud je vybraná záložka, vrátí její hodnotu; jinak prázdný řetězec
+        set
+        {
+            if (SelectedTab != null)
+            {
+                SelectedTab.TemperatureInput = value; // Uloží hodnotu do aktivní záložky
+                OnPropertyChanged(nameof(TemperatureInput)); // Oznámí změnu pro binding
+            }
+        }
+    }
+
+    /// <summary>
+    /// Vstupní hodnota z frekvenčního SearchBaru.
+    /// Stejně jako u teploty, tato property je navázaná na aktuální tab.
+    /// Díky tomu je každý vstup oddělený podle záložek.
+    /// </summary>
+    public string FrequencyInput
+    {
+        get => SelectedTab?.FrequencyInput ?? string.Empty;
+        set
+        {
+            if (SelectedTab != null)
+            {
+                SelectedTab.FrequencyInput = value;
+                OnPropertyChanged(nameof(FrequencyInput));
+            }
+        }
+    }
+
+
+    // Notifikace změny property – nutná pro binding
     public new event PropertyChangedEventHandler? PropertyChanged;
     private new void OnPropertyChanged(string propertyName)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
-    // Instance správce grafů, který se stará o jejich správu.
-    private GraphManager _graphManager = new();
 
-    // Instance správce souborů, který umožňuje načítání obsahu souborů.
+    // Instance správce grafů a správce souborů
+    private GraphManager _graphManager = new();
     private FileHandler _fileHandler = new();
 
-    // Záložka nahraného souboru
+    // Kolekce záložek (načtených souborů)
     private ObservableCollection<GraphTab> _tabs = new();
     public ObservableCollection<GraphTab> Tabs
     {
@@ -52,7 +83,7 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
         }
     }
 
-    // Právě vybraná záložka
+    // Aktuálně vybraná záložka
     private GraphTab? _selectedTab;
     public GraphTab? SelectedTab
     {
@@ -64,19 +95,22 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
                 _selectedTab = value;
                 OnPropertyChanged(nameof(SelectedTab));
                 OnPropertyChanged(nameof(SelectedTab.Graphs));
+
+                OnPropertyChanged(nameof(TemperatureInput));
+                OnPropertyChanged(nameof(FrequencyInput));
             }
         }
     }
 
-
-    // Kolekce grafů, která je propojena s UI a obsahuje seznam všech grafů.
+    // Kolekce všech grafů (propojeno se správcem grafů)
     public ObservableCollection<GraphModel> Graphs { get; set; }
 
-    
-    // Interní proměnná pro sledování, zda je nějaký graf zvětšený.
-    private bool _isAnyGraphExpanded;
+    // Návrhy do dropdownů pro hledání teploty/frekvence
+    public ObservableCollection<string> TemperatureSuggestions { get; set; } = new();
+    public ObservableCollection<string> FrequencySuggestions { get; set; } = new();
 
-    // Vlastnost pro indikaci, zda je některý graf zvětšený.
+    // Zda je některý graf zvětšený – pro UI logiku
+    private bool _isAnyGraphExpanded;
     public bool IsAnyGraphExpanded
     {
         get => _isAnyGraphExpanded;
@@ -85,12 +119,12 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
             if (_isAnyGraphExpanded != value)
             {
                 _isAnyGraphExpanded = value;
-                OnPropertyChanged(nameof(IsAnyGraphExpanded)); // Notifikace změny
+                OnPropertyChanged(nameof(IsAnyGraphExpanded));
             }
         }
     }
 
-    // Proměnné pro řízení vstupu uživatele, kdy jeden vstup zamyká druhý.
+    // Lockování vstupních polí (teplota vs. frekvence)
     private bool _isFrequencyEnabled = true;
     private bool _isTemperatureEnabled = true;
 
@@ -114,18 +148,18 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
         }
     }
 
-    // Statická instance MainPage pro snadný přístup k této třídě z jiných tříd.
+    // Statická instance MainPage – dá se na ni odkázat z jiných tříd
     public static MainPage? Instance { get; private set; }
 
     /// <summary>
-    /// Konstruktor hlavní stránky aplikace.
+    /// Konstruktor – inicializace bindingu a eventů
     /// </summary>
     public MainPage()
     {
-        Instance = this; // Nastavení statické instance
-        InitializeComponent(); // Inicializace komponent UI
-        Graphs = _graphManager.Graphs; // Propojení kolekce grafů se správcem
-        BindingContext = this; // Nastavení BindingContext pro data binding
+        Instance = this;
+        InitializeComponent();
+        Graphs = _graphManager.Graphs;
+        BindingContext = this;
 
         Tabs.CollectionChanged += (s, e) =>
         {
@@ -133,22 +167,14 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
             OnPropertyChanged(nameof(Tabs.Count));
         };
 
-        // Přidání testovacích záložek
-        // Tabs.Add(new GraphTab() { FileName = "Testovací soubor 1.txt" });
-        
-
-        
-
-        // Debug výpis pro kontrolu počtu grafů při spuštění aplikace.
-        Debug.WriteLine($"Počet grafů při spuštění: {Graphs.Count}");
     }
 
     /// <summary>
-    /// Metoda pro načtení souboru po kliknutí na tlačítko.
+    /// Tlačítko načíst soubor – vyvolá dialog, načte data, vytvoří záložku
     /// </summary>
     private async void OnLoadFileClicked(object sender, EventArgs e)
     {
-        string? filePath = await _fileHandler.PickFileAsync(); // Výběr souboru
+        string? filePath = await _fileHandler.PickFileAsync();
         if (!string.IsNullOrEmpty(filePath))
         {
             var newTab = new GraphTab() { FileName = System.IO.Path.GetFileName(filePath) };
@@ -159,13 +185,14 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
                 return;
             }
 
+            // Získání náhledu dat
             var lines = await newTab.MeasureData.MakeToStringAsync(100);
             newTab.DisplayData.Clear();
             foreach (var line in lines)
-            {
                 newTab.DisplayData.Add(line);
-            }
-            newTab.Graphs.Add(new GraphModel { Name = "Graf 1" });
+
+            // Jeden výchozí graf
+            newTab.Graphs.Add(new GraphModel() { Name = "Graf 1" });
 
             Tabs.Add(newTab);
             SelectedTab = newTab;
@@ -173,9 +200,8 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
         RecalculateGraphSizes();
     }
 
-
     /// <summary>
-    /// Přidá nový graf do seznamu grafů.
+    /// Přidání nového grafu do aktivní záložky
     /// </summary>
     private void OnAddGraphClicked(object sender, EventArgs e)
     {
@@ -189,24 +215,21 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
     }
 
     /// <summary>
-    /// Změní velikost vybraného grafu.
+    /// Změna stavu zvětšení u grafu (expand/collapse)
     /// </summary>
-    public void OnResizeGraphClicked(object sender, EventArgs e)
+    private void OnResizeGraphClicked(object sender, EventArgs e)
     {
         if (sender is Button button && button.BindingContext is GraphModel graph)
         {
             if (SelectedTab == null) return;
 
             if (graph.IsExpanded)
-            {
                 graph.IsExpanded = false;
-            }
             else
             {
                 foreach (var g in SelectedTab.Graphs)
-                {
                     g.IsExpanded = false;
-                }
+
                 graph.IsExpanded = true;
             }
 
@@ -216,61 +239,53 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
         }
     }
 
-
-
     /// <summary>
-    /// Aktualizuje viditelnost grafů podle jejich stavu zvětšení.
+    /// Nastaví které grafy budou vidět – pokud je jeden expandnutý, ostatní se skryjí
     /// </summary>
     private void UpdateGraphVisibility()
     {
-        if (SelectedTab == null)
-            return;
+        if (SelectedTab == null) return;
 
         IsAnyGraphExpanded = SelectedTab.Graphs.Any(g => g.IsExpanded);
 
         foreach (var g in SelectedTab.Graphs)
-        {
             g.IsVisible = !IsAnyGraphExpanded || g.IsExpanded;
-        }
 
         OnPropertyChanged(nameof(IsAnyGraphExpanded));
         OnPropertyChanged(nameof(SelectedTab));
     }
 
-
     /// <summary>
-    /// Exportuje vybraný graf.
+    /// Simulovaný export grafu – aktuálně jen Alert
     /// </summary>
-    public async void OnExportGraphClicked(object sender, EventArgs e)
+    private async void OnExportGraphClicked(object sender, EventArgs e)
     {
         if (sender is Button button && button.BindingContext is GraphModel graph)
-        {
             await DisplayAlert("Export", $"Exportuji graf: {graph.Name}", "OK");
-        }
         else
-        {
             await DisplayAlert("Chyba", "Nelze exportovat graf.", "OK");
-        }
     }
 
     /// <summary>
-    /// Zamyká zadávání frekvence, pokud uživatel zadal hodnotu teploty.
+    /// Změna textu v teplotním políčku – zapíná/vypíná druhé pole + suggestions
     /// </summary>
     private void OnTemperatureTextChanged(object sender, TextChangedEventArgs e)
     {
-        IsFrequencyEnabled = string.IsNullOrWhiteSpace(e.NewTextValue); // Zamknutí frekvence
+        IsFrequencyEnabled = string.IsNullOrWhiteSpace(e.NewTextValue);
+        UpdateTemperatureSuggestions(e.NewTextValue);
     }
 
     /// <summary>
-    /// Zamyká zadávání teploty, pokud uživatel zadal hodnotu frekvence.
+    /// Změna textu ve frekvenčním políčku – zapíná/vypíná druhé pole + suggestions
     /// </summary>
     private void OnFrequencyTextChanged(object sender, TextChangedEventArgs e)
     {
-        IsTemperatureEnabled = string.IsNullOrWhiteSpace(e.NewTextValue); // Zamknutí teploty
+        IsTemperatureEnabled = string.IsNullOrWhiteSpace(e.NewTextValue);
+        UpdateFrequencySuggestions(e.NewTextValue);
     }
 
     /// <summary>
-    /// Simuluje hledání dat na základě zadané teploty.
+    /// Zpracování hledání podle teploty – vytvoří `FilteredData` a vygeneruje výpis
     /// </summary>
     private async void OnTemperatureSearch(object sender, EventArgs e)
     {
@@ -279,84 +294,37 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
         if (double.TryParse(TemperatureSearchBar.Text, out double temp))
         {
             SelectedTab.FilteredData = new FilteredData("temperature", temp, SelectedTab.MeasureData);
-
-            // aktualizuj zobrazení
             var lines = await SelectedTab.FilteredData.MakeToStringAsync(0);
 
             SelectedTab.FilteredDisplayData.Clear();
             foreach (var line in lines)
-            {
                 SelectedTab.FilteredDisplayData.Add(line);
-            }
         }
-
-        if (SelectedTab.Graphs.Count > 0)
-        {
-            var graph = SelectedTab.Graphs[0];
-
-            var keys = SelectedTab.FilteredData.Filtered
-                .SelectMany(d => d.extraValues.Keys)
-                .Distinct()
-                .ToArray();
-
-            graph.AvailableYKeys = new ObservableCollection<string>(keys);
-            graph.SelectedKeyY = "Eps'";
-
-            RenderGraph(graph);
-
-            Debug.WriteLine($"[GRAPH] Dostupné Y klíče: {string.Join(", ", graph.AvailableYKeys)}");
-            Debug.WriteLine($"[GRAPH] Zvolený Y klíč: {graph.SelectedKeyY}");
-        }
-
-
-
-
     }
 
     /// <summary>
-    /// Simuluje hledání dat na základě zadané frekvence.
+    /// Zpracování hledání podle frekvence – pozor na parsing
     /// </summary>
     private async void OnFrequencySearch(object sender, EventArgs e)
     {
         if (SelectedTab == null || FrequencySearchBar == null) return;
 
-        if (double.TryParse(FrequencySearchBar.Text, out double freq))
+        // Důležité! Nahradí čárku tečkou a použije invariantní kulturu
+        string input = FrequencySearchBar.Text?.Replace(",", ".") ?? "";
+
+        if (double.TryParse(input, NumberStyles.Float, CultureInfo.InvariantCulture, out double freq))
         {
             SelectedTab.FilteredData = new FilteredData("frequency", freq, SelectedTab.MeasureData);
-
-            // aktualizuj zobrazení
             var lines = await SelectedTab.FilteredData.MakeToStringAsync(0);
 
             SelectedTab.FilteredDisplayData.Clear();
             foreach (var line in lines)
-            {
                 SelectedTab.FilteredDisplayData.Add(line);
-            }
         }
-
-        if (SelectedTab.Graphs.Count > 0)
-        {
-            var graph = SelectedTab.Graphs[0];
-
-            var keys = SelectedTab.FilteredData.Filtered
-                .SelectMany(d => d.extraValues.Keys)
-                .Distinct()
-                .ToList();
-
-            graph.AvailableYKeys = new ObservableCollection<string>(keys);
-            graph.SelectedKeyY = "Eps'";
-
-            RenderGraph(graph);
-
-            Debug.WriteLine($"[GRAPH] Dostupné Y klíče: {string.Join(", ", graph.AvailableYKeys)}");
-            Debug.WriteLine($"[GRAPH] Zvolený Y klíč: {graph.SelectedKeyY}");
-        }
-
-
     }
 
     /// <summary>
-    /// Zobrazuje nápovědu k aplikaci.
+    /// Nápověda – zobrazí Alert
     /// </summary>
     private async void OnHelpClicked(object sender, EventArgs e)
     {
@@ -371,238 +339,142 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
     }
 
     /// <summary>
-    /// Handler pro zavření záložky s grafy.
-    /// Odstraní záložku z kolekce `Tabs`, nastaví nově aktivní záložku
-    /// a přepočítá rozměry zobrazených grafů.
+    /// Zavření záložky – odstranění dat a výběr jiné
     /// </summary>
     private void OnCloseTabClicked(object sender, EventArgs e)
     {
-        // Ověření, že tlačítko má vázaný datový kontext typu GraphTab
         if (sender is Button button && button.BindingContext is GraphTab tab)
         {
-            // Odebere záložku ze seznamu
             Tabs.Remove(tab);
-
-            // Pokud nějaké záložky zůstaly, nastaví první z nich jako aktivní
             SelectedTab = Tabs.FirstOrDefault();
 
-            // Notifikace změn pro UI – aktualizace bindingů
             OnPropertyChanged(nameof(Tabs));
             OnPropertyChanged(nameof(Tabs.Count));
             OnPropertyChanged(nameof(SelectedTab));
 
-            // Přepočítání rozměrů grafů podle nového výběru záložky
             RecalculateGraphSizes();
         }
     }
 
-
     /// <summary>
-    /// Přepis metody, která se volá při změně velikosti okna.
-    /// Slouží k přizpůsobení velikosti grafů podle aktuální šířky a výšky.
+    /// Dynamické přepočítání velikosti grafů podle velikosti okna
     /// </summary>
     protected override void OnSizeAllocated(double width, double height)
     {
         base.OnSizeAllocated(width, height);
-
-        // Přepočet velikostí grafů
         RecalculateGraphSizes();
 
-        // Definice velikosti levého panelu (sidebaru) a mezery
         double leftPanelWidth = 300;
         double padding = 40;
 
-        // Vypočítání dostupného prostoru pro oblast s grafy
         double rightAvailableWidth = width - leftPanelWidth - padding;
-        double usableHeight = height - 120; // odečteme horní část s horní lištou
+        double usableHeight = height - 120;
 
-        // Pokud nejsou žádné grafy nebo záložka není vybraná, končíme
         if (SelectedTab?.Graphs is null)
             return;
 
-        // Pro každý graf v záložce nastavíme šířku a výšku podle stavu zvětšení
         foreach (var graph in SelectedTab.Graphs)
         {
-            // Pokud je graf rozbalený, zabírá celou šířku; jinak půlku
-            graph.Width = graph.IsExpanded
-                ? rightAvailableWidth - 20
-                : rightAvailableWidth / 2 - 20;
-
-            // Výška se přizpůsobí podobně – větší pro rozbalený graf
-            graph.Height = graph.IsExpanded
-                ? usableHeight * 0.95
-                : usableHeight * 0.5;
+            graph.Width = graph.IsExpanded ? rightAvailableWidth - 20 : rightAvailableWidth / 2 - 20;
+            graph.Height = graph.IsExpanded ? usableHeight * 0.95 : usableHeight * 0.5;
         }
     }
 
-
     /// <summary>
-    /// Pomocná metoda, která přepočítává rozměry všech grafů
-    /// na základě aktuální velikosti okna a stavu zvětšení jednotlivých grafů.
-    /// Volá se např. při změně záložky nebo přidání grafu.
+    /// Přepočet velikosti grafů ručně – např. po změně záložky
     /// </summary>
     private void RecalculateGraphSizes()
     {
-        // Konstanty určující levý panel a mezery
         double leftPanelWidth = 300;
         double padding = 40;
 
-        // Výpočet dostupné šířky a výšky pro oblast grafů
         double rightAvailableWidth = Width - leftPanelWidth - padding;
         double usableHeight = Height - 100;
 
-        // Pokud nejsou žádné grafy nebo žádná záložka není vybraná, neděláme nic
         if (SelectedTab?.Graphs is null)
             return;
 
-        // Pro každý graf nastavíme jeho velikost
         foreach (var graph in SelectedTab.Graphs)
         {
-            // Zvětšený graf má větší šířku, ostatní se zmenší
-            graph.Width = graph.IsExpanded
-                ? rightAvailableWidth - 20
-                : rightAvailableWidth / 2 - 20;
-
-            // Výška grafu podle stavu rozbalení
-            graph.Height = graph.IsExpanded
-                ? usableHeight
-                : usableHeight * 0.5;
-            Debug.WriteLine($"Graph size: W={graph.Width}, H={graph.Height}");
-        }
-
-    }
-
-    private void UpdateFilteredDisplayData(IEnumerable<Data> data)
-    {
-        if (SelectedTab == null) return;
-
-        var target = SelectedTab.FilteredDisplayData;
-        target.Clear();
-
-        var extraKeys = data.SelectMany(d => d.extraValues.Keys).Distinct().ToArray();
-        var header = new List<string> { "Frequency", "Temperature" };
-        header.AddRange(extraKeys);
-        target.Add(string.Join("\t", header));
-
-        foreach (var d in data)
-        {
-            List<string> row = new()
-        {
-            d.Frequency.ToString("E2"),
-            d.Temperature.ToString("E2")
-        };
-
-            foreach (var key in extraKeys)
-            {
-                row.Add(d.extraValues.TryGetValue(key, out double val) ? val.ToString("E2") : "-");
-            }
-
-            target.Add(string.Join("\t", row));
+            graph.Width = graph.IsExpanded ? rightAvailableWidth - 20 : rightAvailableWidth / 2 - 20;
+            graph.Height = graph.IsExpanded ? usableHeight : usableHeight * 0.5;
         }
     }
 
-    
+    // --- metody pro suggestions a jejich výběr ---
 
-
-    public void RenderGraph(GraphModel graph)
+    /// <summary>
+    /// Na základě vstupu v teplotním SearchBaru připraví návrhy hodnot
+    /// </summary>
+    private void UpdateTemperatureSuggestions(string input)
     {
-        if (SelectedTab?.FilteredData == null || !SelectedTab.FilteredData.Any())
-            return;
-        var data = SelectedTab.FilteredData.Filtered;
-        string yKey = graph.SelectedKeyY ?? graph.AvailableYKeys?.FirstOrDefault() ?? "Eps'";
-        graph.SelectedKeyY = yKey;
-        var points = data
-            .Where(d => d.extraValues.ContainsKey(yKey))
-            .Select(d => new ObservablePoint(
-                SelectedTab.FilteredData.FilterType == "temperature" ? d.Frequency : d.Temperature,
-                d.extraValues[yKey]))
+        TemperatureSuggestions.Clear();
+
+        if (SelectedTab?.MeasureData?.FileData == null || string.IsNullOrWhiteSpace(input)) return;
+
+        var temps = SelectedTab.MeasureData.FileData
+            .Select(d => d.Temperature.ToString())
+            .Distinct()
+            .Where(t => t.StartsWith(input))
             .ToList();
 
-        Debug.WriteLine($"[RenderGraph] Klíč Y: {yKey}, Počet bodů: {points.Count}");
-        if (points.Count == 0)
-        {
-            Debug.WriteLine("[RenderGraph] Žádné body k vykreslení.");
+        if (temps.Count == 1 && temps[0] == input)
             return;
-        }
 
-        // Calculate min/max values for axes
-        double minX = (double)points.Min(p => p.X);
-        double maxX = (double)points.Max(p => p.X);
-        double minY = (double)points.Min(p => p.Y);
-        double maxY = (double)points.Max(p => p.Y);
+        foreach (var t in temps)
+            TemperatureSuggestions.Add(t);
 
-        // Apply some padding to the min/max values
-        double xPadding = (maxX - minX) * 0.1;
-        double yPadding = (maxY - minY) * 0.1;
-
-        // Improve the line series configuration
-        graph.Series = new ISeries[]
-        {
-        new LineSeries<ObservablePoint>
-        {
-            Values = points,
-            GeometrySize = 4, // Point size
-            GeometryFill = new SolidColorPaint(SKColors.Blue),
-            GeometryStroke = new SolidColorPaint(SKColors.DarkBlue) { StrokeThickness = 2 },
-            Stroke = new SolidColorPaint(SKColors.Green) { StrokeThickness = 3 },
-            Name = yKey,
-            Fill = null,
-            XToolTipLabelFormatter = (chartPoint) => $"X: {chartPoint.Model.X:E2}",
-            YToolTipLabelFormatter = (chartPoint) => $"Y: {chartPoint.Model.Y:E2}"
-        }
-        };
-
-        // Configure X Axis with more visible properties
-        graph.XAxes = new Axis[]
-        {
-        new Axis
-        {
-            Name = SelectedTab.FilteredData.FilterType == "temperature" ? "Frequency [Hz]" : "Temperature [°C]",
-            NamePaint = new SolidColorPaint(SKColors.Black),
-            
-            // Ensure labels are visible with proper rotation
-            LabelsRotation = 15,
-            Labeler = val => val.ToString("E2"),
-            TextSize = 13,
-            
-            // Make separators visible
-            SeparatorsPaint = new SolidColorPaint(SKColors.LightGray) { StrokeThickness = 1 },
-            
-            // Set the min and max limits to ensure the axis is visible
-            MinLimit = minX - xPadding,
-            MaxLimit = maxX + xPadding,
-            
-            // Show axis
-            IsVisible = true,
-            ShowSeparatorLines = true
-        }
-        };
-
-        // Configure Y Axis with more visible properties
-        graph.YAxes = new Axis[]
-        {
-        new Axis
-        {
-            Name = yKey,
-            NamePaint = new SolidColorPaint(SKColors.Black),
-            
-            // Ensure labels are properly formatted
-            Labeler = val => val.ToString("E2"),
-            TextSize = 13,
-            
-            // Make separators visible
-            SeparatorsPaint = new SolidColorPaint(SKColors.LightGray) { StrokeThickness = 1 },
-            
-            // Set the min and max limits to ensure the axis is visible
-            MinLimit = minY - yPadding,
-            MaxLimit = maxY + yPadding,
-            
-            // Show axis
-            IsVisible = true,
-            ShowSeparatorLines = true
-        }
-        };
-
-        Debug.WriteLine($"Graph Size -> Width: {graph.Width}, Height: {graph.Height}");
+        TemperatureDropdown.HeightRequest = Math.Min(TemperatureSuggestions.Count * 40, 200);
     }
+
+    /// <summary>
+    /// Na základě vstupu ve frekvenčním SearchBaru připraví návrhy hodnot
+    /// </summary>
+    private void UpdateFrequencySuggestions(string input)
+    {
+        FrequencySuggestions.Clear();
+
+        if (SelectedTab?.MeasureData?.FileData == null || string.IsNullOrWhiteSpace(input)) return;
+
+        var freqs = SelectedTab.MeasureData.FileData
+            .Select(d => d.Frequency.ToString())
+            .Distinct()
+            .Where(f => f.StartsWith(input))
+            .ToList();
+
+        if (freqs.Count == 1 && freqs[0] == input)
+            return;
+
+        foreach (var f in freqs)
+            FrequencySuggestions.Add(f);
+
+        FrequencyDropdown.HeightRequest = Math.Min(FrequencySuggestions.Count * 40, 200);
+    }
+
+    /// <summary>
+    /// Po kliknutí na návrh v teplotním dropdownu nastaví hodnotu a spustí hledání
+    /// </summary>
+    private void OnTemperatureSuggestionSelected(object sender, SelectionChangedEventArgs e)
+    {
+        if (e.CurrentSelection.FirstOrDefault() is string selected)
+        {
+            TemperatureSearchBar.Text = selected;
+            TemperatureSuggestions.Clear();
+            OnTemperatureSearch(sender, EventArgs.Empty);
+        }
+    }
+
+    /// <summary>
+    /// Po kliknutí na návrh ve frekvenčním dropdownu nastaví hodnotu a spustí hledání
+    /// </summary>
+    private void OnFrequencySuggestionSelected(object sender, SelectionChangedEventArgs e)
+    {
+        if (e.CurrentSelection.FirstOrDefault() is string selected)
+        {
+            FrequencySearchBar.Text = selected;
+            FrequencySuggestions.Clear();
+            OnFrequencySearch(sender, EventArgs.Empty);
+        }
+    }
+
 }

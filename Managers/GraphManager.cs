@@ -1,8 +1,5 @@
 using project.Models;
-using Syncfusion.Maui.Charts;
 using System.Collections.ObjectModel; // Pro kolekci ObservableCollection, která umožňuje dynamické aktualizace UI
-using LiveChartsCore;
-using LiveChartsCore.SkiaSharpView;
 
 namespace project.Managers;
 
@@ -62,7 +59,3 @@ public class GraphManager
         }
     }
 }
-
-
-
-

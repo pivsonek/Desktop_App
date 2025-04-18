@@ -60,23 +60,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="LiveChartsCore.SkiaSharpView.Maui" Version="2.0.0-rc5.4" />
 		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0" />
 		<PackageReference Include="Syncfusion.Maui.Charts" Version="21.2.3" />
 		<PackageReference Include="Syncfusion.Maui.Core" Version="21.2.3" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Compile Update="View\GraphCard.xaml.cs">
-	    <DependentUpon>GraphCard.xaml</DependentUpon>
-	  </Compile>
-	</ItemGroup>
-
-	<ItemGroup>
-	  <MauiXaml Update="View\GraphCard.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
 	</ItemGroup>
 
 </Project>
