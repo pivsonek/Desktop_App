@@ -1,0 +1,26 @@
+# Build výstupy
+bin/
+obj/
+
+# Uživatelská nastavení
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# VS Code
+.vscode/
+
+# Visual Studio
+.vs/
+
+# Systémové soubory
+Thumbs.db
+Desktop.ini
+
+# MAC a Linux systémové soubory
+.DS_Store
+
+# Přihlašovací údaje nebo citlivé configy (pokud bys měl)
+appsettings*.json
+secrets.json
