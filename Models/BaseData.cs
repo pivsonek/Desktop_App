@@ -32,12 +32,12 @@ namespace project.Models
             List<List<string>> rows = new();
             foreach (var d in dataList.Take(limit))
             {
-                List<string> row = new() { d.Frequency.ToString(), d.Temperature.ToString() };
+                List<string> row = new() { d.Frequency.ToString("E2"), d.Temperature.ToString("E2") };
 
                 foreach (var key in extraKeys)
                 {
                     if (d.extraValues.TryGetValue(key, out double val))
-                        row.Add(val.ToString());
+                        row.Add(val.ToString("E2"));
                     else
                         row.Add("-");
                 }
