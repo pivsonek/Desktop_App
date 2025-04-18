@@ -1,6 +1,9 @@
+using LiveChartsCore.SkiaSharpView;
+using LiveChartsCore;
 using project.View;
 using System.ComponentModel; // Pro podporu notifikace změn v UI
 using System.Diagnostics; // Pro ladící výpisy do konzole
+using System.Collections.ObjectModel;
 
 namespace project.Models;
 
@@ -12,6 +15,23 @@ public class GraphModel : INotifyPropertyChanged
 {
     // Soukromá proměnná pro název grafu
     private string _name = string.Empty;
+
+    public ObservableCollection<string> AvailableYKeys { get; set; } = new();
+
+    private string? _selectedKeyY;
+    public string? SelectedKeyY
+    {
+        get => _selectedKeyY;
+        set
+        {
+            if (_selectedKeyY != value)
+            {
+                _selectedKeyY = value;
+                OnPropertyChanged(nameof(_selectedKeyY));
+                MainPage.Instance?.RenderGraph(this);
+            }
+        }
+    }
 
     private double _width;
     public double Width
@@ -28,7 +48,27 @@ public class GraphModel : INotifyPropertyChanged
     }
 
 
+    private ISeries[] _series;
+    public ISeries[] Series
+    {
+        get => _series;
+        set { _series = value; OnPropertyChanged(nameof(Series));}
+        
+    }
 
+    private Axis[] _xAxes;
+    public Axis[] XAxes
+    {
+        get => _xAxes;
+        set { _xAxes = value; OnPropertyChanged(nameof(XAxes)); }
+    }
+
+
+    private Axis[] _yAxes;
+    public Axis[] YAxes { get => _yAxes; set { _yAxes = value; OnPropertyChanged(nameof(_yAxes));} } 
+
+   
+    
 
     /// <summary>
     /// Název grafu.

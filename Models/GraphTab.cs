@@ -33,35 +33,14 @@ namespace project.Models
         /// </summary>
         public ObservableCollection<string> DisplayData { get; set; } = new(); // kolekce pro zobrazení dat
 
+        public ObservableCollection<string> FilteredDisplayData { get; set; } = new(); // kolekce pro zobrazení filtrovaných dat
+      
         /// <summary>
-        /// Kolekce textových řádků, které reprezentují filtrovaná data.
-        /// Zobrazuje se v levém panelu aplikace po provedení filtrace podle teploty nebo frekvence.
-        /// Každá položka je jeden řádek tabulky převedený na text.
+        /// Instance třídy, která obsahuje parsovaná měřená data ze souboru.
+        /// Používá se např. pro filtrování podle teploty/frekvence nebo formátování textového výstupu.
         /// </summary>
-        public ObservableCollection<string> FilteredDisplayData { get; set; } = new();
+        public MeasureData MeasureData { get; set; } = new(); // Data měření
 
-        /// <summary>
-        /// Objekt, který obsahuje všechna data načtená ze souboru.
-        /// Používá se k zobrazení původních (nefiltrovaných) dat a k provádění filtrací.
-        /// </summary>
-        public MeasureData MeasureData { get; set; } = new();
-
-        /// <summary>
-        /// Výsledek poslední aplikované filtrace (např. podle teploty nebo frekvence).
-        /// Pokud nebyl aplikován žádný filtr, zůstává null.
-        /// </summary>
-        public FilteredData? FilteredData { get; set; }
-
-        /// <summary>
-        /// Textová hodnota zadaná uživatelem do teplotního SearchBaru.
-        /// Uchovává se na úrovni záložky, takže každá záložka má svůj vlastní vstup.
-        /// </summary>
-        public string TemperatureInput { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Textová hodnota zadaná uživatelem do frekvenčního SearchBaru.
-        /// Uchovává se na úrovni záložky, takže každá záložka má svůj vlastní vstup.
-        /// </summary>
-        public string FrequencyInput { get; set; } = string.Empty;
+        public FilteredData? FilteredData { get; set; } // Filtrovaná data
     }
 }
