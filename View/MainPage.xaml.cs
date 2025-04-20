@@ -513,6 +513,81 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
         }
     }
 
+    private Axis[] setYAxes(GraphModel graph, string yKey, double minY, double maxY, double yPadding)
+    {
+        return new Axis[]
+        {
+            new Axis
+            {
+                Name = yKey,
+                NamePaint = new SolidColorPaint(SKColors.Black),
+                Labeler = val => val.ToString("F2"),
+                TextSize = 13,
+                SeparatorsPaint = new SolidColorPaint(SKColors.LightGray) { StrokeThickness = 1 },
+                MinLimit = minY - yPadding,
+                MaxLimit = maxY + yPadding,
+                IsVisible = true,
+                ShowSeparatorLines = true
+            }
+        };
+    }
+
+    private Axis[] setXAxes(GraphModel graph, bool isFrequencyXAxis, double minX, double maxX, double xPadding)
+    {
+        return new Axis[]
+        {
+            new Axis
+            {
+                Name = isFrequencyXAxis ? "log₁₀(Frequency [Hz])" : "Temperature [°C]",
+                NamePaint = new SolidColorPaint(SKColors.Black),
+                LabelsRotation = 15,
+                Labeler = isFrequencyXAxis
+                    ? (Func<double, string>)(val => $"{Math.Pow(10, val):0}")
+                    : (val => val.ToString("F1")),
+                TextSize = 13,
+                SeparatorsPaint = new SolidColorPaint(SKColors.LightGray) { StrokeThickness = 1 },
+                MinLimit = minX - xPadding,
+                MaxLimit = maxX + xPadding,
+                IsVisible = true,
+                ShowSeparatorLines = true
+            }
+        };
+    }
+
+    private ISeries[] CreateSeries(IEnumerable<ObservablePoint> points, string yKey, bool isFrequencyXAxis)
+    {
+        return new ISeries[]
+        {
+        new LineSeries<ObservablePoint>
+        {
+            Values = points.ToList(),
+            GeometrySize = 4,
+            GeometryFill = new SolidColorPaint(SKColors.Blue),
+            GeometryStroke = new SolidColorPaint(SKColors.DarkBlue) { StrokeThickness = 2 },
+            Stroke = new SolidColorPaint(SKColors.Green) { StrokeThickness = 3 },
+            Name = yKey,
+            Fill = null,
+            XToolTipLabelFormatter = (chartPoint) =>
+            {
+                if (chartPoint.Model is ObservablePoint model && model.X.HasValue)
+                {
+                    double xValue = model.X.GetValueOrDefault();
+                    return isFrequencyXAxis
+                        ? $"f: {Math.Pow(10, xValue):E3} Hz"
+                        : $"T: {model.X:F1} °C";
+                }
+                return string.Empty;
+            },
+            YToolTipLabelFormatter = (chartPoint) =>
+            {
+                if (chartPoint.Model is ObservablePoint model)
+                    return $"Y: {model.Y:F3}";
+                return string.Empty;
+            }
+        }
+        };
+    }
+
     /// <summary>
     /// Vykreslí graf podle aktuálního nastavení a dat v SelectedTab.
     /// </summary>
@@ -524,10 +599,14 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
         var data = SelectedTab.FilteredData.Filtered;
         string yKey = graph.SelectedKeyY ?? graph.AvailableYKeys?.FirstOrDefault() ?? "Eps'";
         graph.SelectedKeyY = yKey;
+
+        bool isFrequencyXAxis = SelectedTab.FilteredData.FilterType == "temperature";
+
+        // vybereme body podle osy
         var points = data
-            .Where(d => d.extraValues.ContainsKey(yKey))
+            .Where(d => d.extraValues.ContainsKey(yKey) && (isFrequencyXAxis ? d.Frequency > 0 : true)) // ochrana proti log(0)
             .Select(d => new ObservablePoint(
-                SelectedTab.FilteredData.FilterType == "temperature" ? d.Frequency : d.Temperature,
+                isFrequencyXAxis ? Math.Log10(d.Frequency) : d.Temperature,
                 d.extraValues[yKey]))
             .ToList();
 
@@ -549,71 +628,11 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
         double yPadding = (maxY - minY) * 0.1;
 
         // Improve the line series configuration
-        graph.Series = new ISeries[]
-        {
-        new LineSeries<ObservablePoint>
-        {
-            Values = points,
-            GeometrySize = 4, // Point size
-            GeometryFill = new SolidColorPaint(SKColors.Blue),
-            GeometryStroke = new SolidColorPaint(SKColors.DarkBlue) { StrokeThickness = 2 },
-            Stroke = new SolidColorPaint(SKColors.Green) { StrokeThickness = 3 },
-            Name = yKey,
-            Fill = null,
-            XToolTipLabelFormatter = (chartPoint) => chartPoint.Model is { } model ? $"X: {model.X:E3}" : string.Empty,
-            YToolTipLabelFormatter = (chartPoint) => chartPoint.Model is { } model ? $"Y: {model.Y:E3}" : string.Empty
-        }
-        };
+        graph.Series = CreateSeries(points, yKey, isFrequencyXAxis);
 
-        // Configure X Axis with more visible properties
-        graph.XAxes = new Axis[]
-        {
-        new Axis
-        {
-            Name = SelectedTab.FilteredData.FilterType == "temperature" ? "Frequency [Hz]" : "Temperature [°C]",
-            NamePaint = new SolidColorPaint(SKColors.Black),
-            
-            // Ensure labels are visible with proper rotation
-            LabelsRotation = 15,
-            Labeler = val => val.ToString("E2"),
-            TextSize = 13,
-            
-            // Make separators visible
-            SeparatorsPaint = new SolidColorPaint(SKColors.LightGray) { StrokeThickness = 1 },
-            
-            // Set the min and max limits to ensure the axis is visible
-            MinLimit = minX - xPadding,
-            MaxLimit = maxX + xPadding,
-            
-            // Show axis
-            IsVisible = true,
-            ShowSeparatorLines = true
-        }
-        };
+        // Set the graph axes
+        graph.XAxes = setXAxes(graph, isFrequencyXAxis, minX, maxX, xPadding);
 
-        // Configure Y Axis with more visible properties
-        graph.YAxes = new Axis[]
-        {
-        new Axis
-        {
-            Name = yKey,
-            NamePaint = new SolidColorPaint(SKColors.Black),
-            
-            // Ensure labels are properly formatted
-            Labeler = val => val.ToString("E2"),
-            TextSize = 13,
-            
-            // Make separators visible
-            SeparatorsPaint = new SolidColorPaint(SKColors.LightGray) { StrokeThickness = 1 },
-            
-            // Set the min and max limits to ensure the axis is visible
-            MinLimit = minY - yPadding,
-            MaxLimit = maxY + yPadding,
-            
-            // Show axis
-            IsVisible = true,
-            ShowSeparatorLines = true
-        }
-        };
+        graph.YAxes = setYAxes(graph, yKey, minX, maxY, yPadding);
     }
 }
