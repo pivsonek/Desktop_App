@@ -1,24 +1,25 @@
-using Microsoft.Maui;
-using Microsoft.Maui.Controls.Hosting;
-using Microsoft.Maui.Hosting;
 using Syncfusion.Maui.Core.Hosting;
-using project.Converters;
-using LiveChartsCore.SkiaSharpView.Maui; // Přidáno pro grafy
-using SkiaSharp.Views.Maui.Controls.Hosting;
+using LiveChartsCore.SkiaSharpView.Maui;
+using CommunityToolkit.Maui;
 
 namespace project.App;
 
+/// <summary>
+/// Configures and builds the main MAUI application.
+/// </summary>
 public static class MauiProgram
 {
     /// <summary>
-    /// Vytvoří a nakonfiguruje hlavní aplikaci MAUI.
+    /// Creates and configures the MAUI application instance.
     /// </summary>
+    /// <returns>The configured <see cref="MauiApp"/> instance.</returns>
     public static MauiApp CreateMauiApp()
     {
         var builder = MauiApp.CreateBuilder();
 
         builder
             .UseMauiApp<App>()
+            .UseMauiCommunityToolkit()
             .ConfigureMauiHandlers(handlers =>
             {
                 handlers.AddHandler<SkiaSharp.Views.Maui.Controls.SKCanvasView, SkiaSharp.Views.Maui.Handlers.SKCanvasViewHandler>();
@@ -30,7 +31,6 @@ public static class MauiProgram
             })
             .ConfigureSyncfusionCore();
 
-
-        return builder.Build(); // Sestavení aplikace
+        return builder.Build();
     }
 }
