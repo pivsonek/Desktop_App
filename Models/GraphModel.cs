@@ -1,8 +1,7 @@
-using LiveChartsCore.SkiaSharpView;
-using LiveChartsCore;
 using project.View;
-using System.ComponentModel; // Pro podporu notifikace změn v UI
-using System.Diagnostics; // Pro ladící výpisy do konzole
+using System.ComponentModel;
+using LiveChartsCore;
+using LiveChartsCore.SkiaSharpView;
 using System.Collections.ObjectModel;
 
 namespace project.Models;
@@ -13,7 +12,6 @@ namespace project.Models;
 /// </summary>
 public class GraphModel : INotifyPropertyChanged
 {
-    // Soukromá proměnná pro název grafu
     private string _name = string.Empty;
 
     public ObservableCollection<string> AvailableYKeys { get; set; } = new();
@@ -47,28 +45,24 @@ public class GraphModel : INotifyPropertyChanged
         set { _height = value; OnPropertyChanged(nameof(Height)); }
     }
 
-
-    private ISeries[] _series;
+    private ISeries[] _series = null!;
     public ISeries[] Series
     {
         get => _series;
-        set { _series = value; OnPropertyChanged(nameof(Series));}
-        
+        set { _series = value; OnPropertyChanged(nameof(Series)); }
+
     }
 
-    private Axis[] _xAxes;
+    private Axis[] _xAxes = null!;
     public Axis[] XAxes
     {
         get => _xAxes;
         set { _xAxes = value; OnPropertyChanged(nameof(XAxes)); }
     }
 
+    private Axis[] _yAxes = null!;
+    public Axis[] YAxes { get => _yAxes; set { _yAxes = value; OnPropertyChanged(nameof(_yAxes)); } }
 
-    private Axis[] _yAxes;
-    public Axis[] YAxes { get => _yAxes; set { _yAxes = value; OnPropertyChanged(nameof(_yAxes));} } 
-
-   
-    
 
     /// <summary>
     /// Název grafu.
@@ -106,8 +100,6 @@ public class GraphModel : INotifyPropertyChanged
             }
         }
     }
-
-    // Soukromá proměnná pro viditelnost grafu
     private bool _isVisible = true;
 
     /// <summary>
@@ -138,6 +130,6 @@ public class GraphModel : INotifyPropertyChanged
     /// <param name="propertyName">Název změněné vlastnosti.</param>
     public void OnPropertyChanged(string propertyName)
     {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName)); // Oznámíme změnu UI
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }
