@@ -1,7 +1,7 @@
-﻿namespace project.App;
+namespace project.App;
 
 /// <summary>
-/// Definuje strukturu navigace aplikace.
+/// Defines the main application shell.
 /// </summary>
 public partial class AppShell : Shell
 {
