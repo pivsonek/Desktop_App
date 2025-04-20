@@ -1,11 +1,9 @@
-﻿using Microsoft.Maui;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Hosting;
 using Syncfusion.Maui.Core.Hosting;
 using project.Converters;
-using LiveChartsCore;
-using LiveChartsCore.SkiaSharpView.Maui;
-using LiveChartsCore.SkiaSharpView;
+using LiveChartsCore.SkiaSharpView.Maui; // Přidáno pro grafy
 using SkiaSharp.Views.Maui.Controls.Hosting;
 
 namespace project.App;
@@ -20,15 +18,17 @@ public static class MauiProgram
         var builder = MauiApp.CreateBuilder();
 
         builder
-            .UseMauiApp<App>() // Použití hlavní třídy aplikace
+            .UseMauiApp<App>()
+            .ConfigureMauiHandlers(handlers =>
+            {
+                handlers.AddHandler<SkiaSharp.Views.Maui.Controls.SKCanvasView, SkiaSharp.Views.Maui.Handlers.SKCanvasViewHandler>();
+            })
             .UseLiveCharts()
-            .UseSkiaSharp()
             .ConfigureFonts(fonts =>
             {
-                fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular"); // Přidání vlastního fontu
+                fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
             })
-            .ConfigureSyncfusionCore(); // Nastavení Syncfusion komponent
-
+            .ConfigureSyncfusionCore();
 
 
         return builder.Build(); // Sestavení aplikace
