@@ -7,16 +7,23 @@ using System.Collections.ObjectModel;
 namespace project.Models;
 
 /// <summary>
-/// Model grafu, který podporuje změny vlastností (notifikace).
-/// Každý graf má svůj název, stav rozbalení a viditelnost.
+/// Represents a graph model containing configuration and display properties for rendering.
 /// </summary>
 public class GraphModel : INotifyPropertyChanged
 {
     private string _name = string.Empty;
 
+    /// <summary>
+    /// List of available Y-axis keys that can be plotted.
+    /// </summary>
     public ObservableCollection<string> AvailableYKeys { get; set; } = new();
 
     private string? _selectedKeyY;
+
+    /// <summary>
+    /// Currently selected Y-axis key.
+    /// When changed, the graph is re-rendered.
+    /// </summary>
     public string? SelectedKeyY
     {
         get => _selectedKeyY;
@@ -32,6 +39,10 @@ public class GraphModel : INotifyPropertyChanged
     }
 
     private double _width;
+
+    /// <summary>
+    /// Width of the graph UI element.
+    /// </summary>
     public double Width
     {
         get => _width;
@@ -39,6 +50,10 @@ public class GraphModel : INotifyPropertyChanged
     }
 
     private double _height;
+
+    /// <summary>
+    /// Height of the graph UI element.
+    /// </summary>
     public double Height
     {
         get => _height;
@@ -46,14 +61,21 @@ public class GraphModel : INotifyPropertyChanged
     }
 
     private ISeries[] _series = null!;
+
+    /// <summary>
+    /// The data series to be plotted.
+    /// </summary>
     public ISeries[] Series
     {
         get => _series;
         set { _series = value; OnPropertyChanged(nameof(Series)); }
-
     }
 
     private Axis[] _xAxes = null!;
+
+    /// <summary>
+    /// Configuration for the X-axis.
+    /// </summary>
     public Axis[] XAxes
     {
         get => _xAxes;
@@ -61,32 +83,36 @@ public class GraphModel : INotifyPropertyChanged
     }
 
     private Axis[] _yAxes = null!;
-    public Axis[] YAxes { get => _yAxes; set { _yAxes = value; OnPropertyChanged(nameof(_yAxes)); } }
-
 
     /// <summary>
-    /// Název grafu.
-    /// Pokud se změní, notifikujeme UI, aby se aktualizovalo.
+    /// Configuration for the Y-axis.
+    /// </summary>
+    public Axis[] YAxes
+    {
+        get => _yAxes;
+        set { _yAxes = value; OnPropertyChanged(nameof(_yAxes)); }
+    }
+
+    /// <summary>
+    /// Title of the graph.
     /// </summary>
     public string Name
     {
         get => _name;
         set
         {
-            if (_name != value) // Kontrola, zda je nová hodnota jiná než stará
+            if (_name != value)
             {
                 _name = value;
-                OnPropertyChanged(nameof(Name)); // Oznámíme změnu vlastnosti
+                OnPropertyChanged(nameof(Name));
             }
         }
     }
-    // Soukromá proměnná pro sledování, zda je graf rozbalený (zvětšený)
+
     private bool _isExpanded;
 
-
     /// <summary>
-    /// Určuje, zda je graf rozbalený (zvětšený).
-    /// Pokud se hodnota změní, UI se aktualizuje.
+    /// Indicates whether the graph is currently expanded to full width.
     /// </summary>
     public bool IsExpanded
     {
@@ -100,11 +126,11 @@ public class GraphModel : INotifyPropertyChanged
             }
         }
     }
+
     private bool _isVisible = true;
 
     /// <summary>
-    /// Určuje, zda je graf viditelný.
-    /// Graf je viditelný, pokud není žádný jiný graf rozbalený, nebo je sám rozbalený.
+    /// Determines whether the graph is visible in the UI.
     /// </summary>
     public bool IsVisible
     {
@@ -120,14 +146,13 @@ public class GraphModel : INotifyPropertyChanged
     }
 
     /// <summary>
-    /// Událost pro oznamování změn vlastností (binding s UI).
+    /// Event triggered when a property value changes.
     /// </summary>
     public event PropertyChangedEventHandler? PropertyChanged;
 
     /// <summary>
-    /// Volá se při změně vlastnosti, aby UI vědělo, že se má překreslit.
+    /// Notifies the UI about property value changes.
     /// </summary>
-    /// <param name="propertyName">Název změněné vlastnosti.</param>
     public void OnPropertyChanged(string propertyName)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
