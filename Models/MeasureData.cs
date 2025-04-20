@@ -3,92 +3,84 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace project.Models
 {
     /// <summary>
-    /// Třída reprezentující dané měření
+    /// Represents a measurement consisting of multiple data records parsed from a file.
     /// </summary>
     public class MeasureData : BaseData
     {
-
+        /// <summary>
+        /// The name of the measurement.
+        /// </summary>
         public string? Name { get; private set; }
 
+        /// <summary>
+        /// Read-only collection of loaded data.
+        /// </summary>
         public IReadOnlyList<Data> FileData => _fileData;
         private readonly List<Data> _fileData = new();
 
         /// <summary>
-        /// Funkce pro urceni zda instance obsahuje nejaka data
+        /// Determines whether any data has been loaded.
         /// </summary>
-        /// <returns>Vraci true pokud data obsahuje jinak False</returns>
         public bool AnyData() => _fileData.Any();
 
         /// <summary>
-        /// Funcke pro filtraci dat na zaklade teploty
+        /// Filters the data based on the given temperature.
         /// </summary>
-        /// <param name="temperature">teplota pro filtraci</param>
-        /// <returns>Vraci filtrovana data</returns>
         public IEnumerable<Data> GetDataByTemperature(double temperature) =>
             _fileData.Where(d => d.Temperature == temperature);
 
         /// <summary>
-        /// Funcke pro filtraci dat na zaklade frekvence
+        /// Filters the data based on the given frequency.
         /// </summary>
-        /// <param name="frequency">frekvence pro filtraci</param>
-        /// <returns>Vraci filtrovana data</returns>
         public IEnumerable<Data> GetDataByFrequency(double frequency) =>
             _fileData.Where(d => d.Frequency == frequency);
 
         /// <summary>
-        /// Nacteni dat ze souboru
+        /// Loads measurement data from a given file.
         /// </summary>
-        /// <param name="filePath">Cesta k souboru</param>
-        /// <returns></returns>
+        /// <param name="filePath">The full path to the data file.</param>
+        /// <returns>True if data was successfully loaded, otherwise false.</returns>
         public async Task<bool> LoadData(string? filePath)
         {
             return await Task.Run(() =>
             {
-                // Kontrola existence souboru
                 if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
                 {
-                    Console.WriteLine("Neplatná cesta k souboru!");
+                    Console.WriteLine("Invalid file path!");
                     return false;
                 }
 
-                // Načtení řádků souboru
                 var lines = File.ReadAllLines(filePath);
 
-                // Kontrola, zda soubor obsahuje dostatek dat
                 if (lines.Length < 5)
                 {
-                    Console.WriteLine("Neplatný obsah dat v měření!");
+                    Console.WriteLine("Insufficient data in file!");
                     return false;
                 }
 
                 int index = 0;
-                Name = lines[index++]; // Název měření
+                Name = lines[index++];
 
-                // Přeskočení nepotřebných řádků, dokud nenajdeme hlavičku
                 while (index < lines.Length && !lines[index].StartsWith(" ")) index++;
                 if (index >= lines.Length) return false;
 
-                // Rozdělení hlavičky do pole
                 string[] header = lines[index++].Split('\t').Select(h => h.Trim()).ToArray();
 
-                // Dynamické vyhledání indexů klíčových sloupců
                 int freqIndex = Array.FindIndex(header, h => h.Contains("Freq", StringComparison.OrdinalIgnoreCase));
                 int tempIndex = Array.FindIndex(header, h => h.Contains("Temp", StringComparison.OrdinalIgnoreCase));
 
                 if (freqIndex == -1 || tempIndex == -1)
                 {
-                    Console.WriteLine("Chybí klíčové sloupce v hlavičce!");
+                    Console.WriteLine("Missing required columns in header!");
                     return false;
                 }
 
-                // Načtení jednotlivých řádků dat
                 for (int i = index; i < lines.Length; i++)
                 {
                     string[] values = lines[i].Split('\t');
@@ -100,17 +92,16 @@ namespace project.Models
                         continue;
                     }
 
-                    // Uložení dalších hodnot do slovníku
                     var extraData = new Dictionary<string, double>();
                     for (int j = 0; j < header.Length && j < values.Length; j++)
                     {
-                        if (j != freqIndex && j != tempIndex && double.TryParse(values[j], NumberStyles.Any, CultureInfo.InvariantCulture, out double value))
+                        if (j != freqIndex && j != tempIndex &&
+                            double.TryParse(values[j], NumberStyles.Any, CultureInfo.InvariantCulture, out double value))
                         {
                             extraData[header[j]] = value;
                         }
                     }
 
-                    // Přidání nového záznamu do seznamu
                     _fileData.Add(new Data(i, freq, temp, extraData));
                 }
 
@@ -118,13 +109,17 @@ namespace project.Models
             });
         }
 
-        
+        /// <summary>
+        /// Converts a portion of the loaded data into formatted text lines.
+        /// </summary>
+        /// <param name="maxRows">Maximum number of data rows to include in the output.</param>
+        /// <returns>Formatted lines representing the data preview.</returns>
         public async override Task<List<string>> MakeToStringAsync(int maxRows = 100)
         {
             return await Task.Run(() =>
             {
                 List<string> lines = new();
-                lines.Add($"Měření: {Name}");
+                lines.Add($"Measurement: {Name}");
 
                 var extraKeys = _fileData
                     .SelectMany(d => d.extraValues.Keys)
@@ -144,13 +139,11 @@ namespace project.Models
 
                 if (_fileData.Count > maxRows)
                 {
-                    lines.Add($"\n... a dalších {_fileData.Count - maxRows} řádků nezobrazeno.");
+                    lines.Add($"\n... a {_fileData.Count - maxRows} dalších řádek neukázáno.");
                 }
 
                 return lines;
             });
         }
-
-
     }
 }
