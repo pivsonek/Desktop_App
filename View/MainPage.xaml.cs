@@ -1,13 +1,8 @@
-using System;
 using System.Collections.ObjectModel;
-using System.Linq;
-using Microsoft.Maui.Controls;
-using System.Diagnostics;
 using System.ComponentModel;
 using project.Services;
 using project.Managers;
 using project.Models;
-using project.Converters;
 using System.Globalization;
 using LiveChartsCore.Defaults;
 using LiveChartsCore.SkiaSharpView.Painting;
@@ -19,32 +14,28 @@ using SkiaSharp;
 namespace project.View;
 
 /// <summary>
-/// Hlavní stránka aplikace, která obsahuje UI a logiku pro zpracování souborů a grafů.
+/// The main page of the application, containing UI and logic for file processing and graph rendering.
 /// </summary>
 public partial class MainPage : ContentPage, INotifyPropertyChanged
 {
     /// <summary>
-    /// Vstupní hodnota z teplotního SearchBaru.
-    /// Tato property je svázaná s právě vybranou záložkou (SelectedTab),
-    /// takže každý tab si uchovává svůj vlastní vstup.
+    /// Gets or sets the temperature input value for the currently selected tab.
     /// </summary>
     public string TemperatureInput
     {
-        get => SelectedTab?.TemperatureInput ?? string.Empty; // Pokud je vybraná záložka, vrátí její hodnotu; jinak prázdný řetězec
+        get => SelectedTab?.TemperatureInput ?? string.Empty;
         set
         {
             if (SelectedTab != null)
             {
-                SelectedTab.TemperatureInput = value; // Uloží hodnotu do aktivní záložky
-                OnPropertyChanged(nameof(TemperatureInput)); // Oznámí změnu pro binding
+                SelectedTab.TemperatureInput = value;
+                OnPropertyChanged(nameof(TemperatureInput));
             }
         }
     }
 
     /// <summary>
-    /// Vstupní hodnota z frekvenčního SearchBaru.
-    /// Stejně jako u teploty, tato property je navázaná na aktuální tab.
-    /// Díky tomu je každý vstup oddělený podle záložek.
+    /// Gets or sets the frequency input value for the currently selected tab.
     /// </summary>
     public string FrequencyInput
     {
@@ -59,20 +50,20 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
         }
     }
 
-
-    // Notifikace změny property – nutná pro binding
     public new event PropertyChangedEventHandler? PropertyChanged;
     private new void OnPropertyChanged(string propertyName)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    // Instance správce grafů a správce souborů
     private GraphManager _graphManager = new();
     private FileHandler _fileHandler = new();
 
-    // Kolekce záložek (načtených souborů)
     private ObservableCollection<GraphTab> _tabs = new();
+
+    /// <summary>
+    /// Collection of all tabs containing loaded files.
+    /// </summary>
     public ObservableCollection<GraphTab> Tabs
     {
         get => _tabs;
@@ -87,8 +78,11 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
         }
     }
 
-    // Aktuálně vybraná záložka
     private GraphTab? _selectedTab;
+
+    /// <summary>
+    /// Currently selected tab.
+    /// </summary>
     public GraphTab? SelectedTab
     {
         get => _selectedTab;
@@ -99,22 +93,25 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
                 _selectedTab = value;
                 OnPropertyChanged(nameof(SelectedTab));
                 OnPropertyChanged(nameof(SelectedTab.Graphs));
-
                 OnPropertyChanged(nameof(TemperatureInput));
                 OnPropertyChanged(nameof(FrequencyInput));
             }
         }
     }
 
-    // Kolekce všech grafů (propojeno se správcem grafů)
+    /// <summary>
+    /// List of graphs managed globally.
+    /// </summary>
     public ObservableCollection<GraphModel> Graphs { get; set; }
 
-    // Návrhy do dropdownů pro hledání teploty/frekvence
     public ObservableCollection<string> TemperatureSuggestions { get; set; } = new();
     public ObservableCollection<string> FrequencySuggestions { get; set; } = new();
 
-    // Zda je některý graf zvětšený – pro UI logiku
     private bool _isAnyGraphExpanded;
+
+    /// <summary>
+    /// Indicates if any graph is currently expanded (fullscreen).
+    /// </summary>
     public bool IsAnyGraphExpanded
     {
         get => _isAnyGraphExpanded;
@@ -128,10 +125,12 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
         }
     }
 
-    // Lockování vstupních polí (teplota vs. frekvence)
     private bool _isFrequencyEnabled = true;
     private bool _isTemperatureEnabled = true;
 
+    /// <summary>
+    /// Determines if the frequency input is enabled.
+    /// </summary>
     public bool IsFrequencyEnabled
     {
         get => _isFrequencyEnabled;
@@ -142,6 +141,9 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
         }
     }
 
+    /// <summary>
+    /// Determines if the temperature input is enabled.
+    /// </summary>
     public bool IsTemperatureEnabled
     {
         get => _isTemperatureEnabled;
@@ -152,11 +154,13 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
         }
     }
 
-    // Statická instance MainPage – dá se na ni odkázat z jiných tříd
+    /// <summary>
+    /// Static reference to the MainPage instance.
+    /// </summary>
     public static MainPage? Instance { get; private set; }
 
     /// <summary>
-    /// Konstruktor – inicializace bindingu a eventů
+    /// Constructor – sets up bindings and initializes UI components.
     /// </summary>
     public MainPage()
     {
@@ -170,11 +174,10 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
             OnPropertyChanged(nameof(Tabs));
             OnPropertyChanged(nameof(Tabs.Count));
         };
-
     }
 
     /// <summary>
-    /// Tlačítko načíst soubor – vyvolá dialog, načte data, vytvoří záložku
+    /// Opens file picker, loads selected file, and creates a new tab with the data.
     /// </summary>
     private async void OnLoadFileClicked(object sender, EventArgs e)
     {
@@ -206,7 +209,7 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
 
         var g1 = new GraphModel
         {
-            Name = "Graf 1",
+            Name = "Graf 1",
             AvailableYKeys = new ObservableCollection<string>(allKeys),
             SelectedKeyY = null
         };
@@ -218,11 +221,8 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
         RecalculateGraphSizes();
     }
 
-
-
-
     /// <summary>
-    /// Přidání nového grafu do aktivní záložky
+    /// Adds a new graph to the currently selected tab.
     /// </summary>
     private void OnAddGraphClicked(object sender, EventArgs e)
     {
@@ -248,10 +248,8 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
         RecalculateGraphSizes();
     }
 
-
-
     /// <summary>
-    /// Změna stavu zvětšení u grafu (expand/collapse)
+    /// Toggles the expansion state of the graph.
     /// </summary>
     public void OnResizeGraphClicked(object sender, EventArgs e)
     {
@@ -276,7 +274,7 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
     }
 
     /// <summary>
-    /// Nastaví které grafy budou vidět – pokud je jeden expandnutý, ostatní se skryjí
+    /// Updates the visibility of each graph based on the expansion state.
     /// </summary>
     private void UpdateGraphVisibility()
     {
@@ -292,7 +290,7 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
     }
 
     /// <summary>
-    /// Simulovaný export grafu – aktuálně jen Alert
+    /// Simulates exporting a graph (currently just a confirmation dialog).
     /// </summary>
     public async void OnExportGraphClicked(object sender, EventArgs e)
     {
@@ -303,7 +301,7 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
     }
 
     /// <summary>
-    /// Změna textu v teplotním políčku – zapíná/vypíná druhé pole + suggestions
+    /// Handles changes in temperature input – disables the frequency input and shows suggestions.
     /// </summary>
     private void OnTemperatureTextChanged(object sender, TextChangedEventArgs e)
     {
@@ -312,7 +310,7 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
     }
 
     /// <summary>
-    /// Změna textu ve frekvenčním políčku – zapíná/vypíná druhé pole + suggestions
+    /// Handles changes in frequency input – disables the temperature input and shows suggestions.
     /// </summary>
     private void OnFrequencyTextChanged(object sender, TextChangedEventArgs e)
     {
@@ -321,7 +319,7 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
     }
 
     /// <summary>
-    /// Zpracování hledání podle teploty – vytvoří `FilteredData` a vygeneruje výpis
+    /// Executes temperature search and generates the filtered data output.
     /// </summary>
     private async void OnTemperatureSearch(object sender, EventArgs e)
     {
@@ -339,13 +337,12 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
     }
 
     /// <summary>
-    /// Zpracování hledání podle frekvence – pozor na parsing
+    /// Executes frequency search and generates the filtered data output.
     /// </summary>
     private async void OnFrequencySearch(object sender, EventArgs e)
     {
         if (SelectedTab == null || FrequencySearchBar == null) return;
 
-        // Důležité! Nahradí čárku tečkou a použije invariantní kulturu
         string input = FrequencySearchBar.Text?.Replace(",", ".") ?? "";
 
         if (double.TryParse(input, NumberStyles.Float, CultureInfo.InvariantCulture, out double freq))
@@ -360,22 +357,30 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
     }
 
     /// <summary>
-    /// Nápověda – zobrazí Alert
+    /// Help button click handler – displays an informational dialog.
     /// </summary>
     private async void OnHelpClicked(object sender, EventArgs e)
     {
         await DisplayAlert("Nápověda",
-            "Tato aplikace umožňuje analyzovat data na základě teploty a frekvence.\n\n" +
-            "1. Zadejte teplotu nebo frekvenci.\n" +
-            "2. Druhá hodnota se automaticky zamkne.\n" +
-            "3. Klikněte na tlačítko hledání pro analýzu.\n" +
-            "4. Můžete přidávat a upravovat grafy.\n\n" +
-            "Pro další informace kontaktujte podporu.",
+            "Tato aplikace slouží k analýze dat podle teploty a frekvence.\n\n" +
+            "1. Klikněte na tlačítko 'Načíst soubor' a vyberte textový soubor s měřením.\n" +
+            "2. Po načtení se zobrazí náhled dat a automaticky se vytvoří grafy.\n\n" +
+            "3. Pro filtrování dat zadejte hodnotu teploty (např. 25) nebo frekvence (např. 1000).\n" +
+            "   - Jakmile zadáte jednu hodnotu, druhé pole se automaticky uzamkne.\n" +
+            "   - Vyberte hodnotu ze seznamu nebo klikněte na lupu pro vyhledání.\n\n" +
+            "4. V hlavní části se zobrazují grafy:\n" +
+            "   - Každý graf lze rozbalit kliknutím na 'Zvětšit' a ostatní grafy se dočasně skryjí.\n" +
+            "   - Pomocí šipky můžete přepnout zobrazenou veličinu na ose Y.\n" +
+            "   - Graf lze exportovat do Excelu pomocí tlačítka 'Export'.\n\n" +
+            "5. Kliknutím na tlačítko '+' přidáte další prázdný graf.\n" +
+            "   - Grafy se automaticky aktualizují podle zvoleného filtru a veličiny.\n\n" +
+            "6. Každý otevřený soubor (záložku) můžete zavřít kliknutím na tlačítko 'X'.\n\n",
             "OK");
     }
 
+
     /// <summary>
-    /// Zavření záložky – odstranění dat a výběr jiné
+    /// Closes the current tab and selects another if available.
     /// </summary>
     private void OnCloseTabClicked(object sender, EventArgs e)
     {
@@ -393,7 +398,7 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
     }
 
     /// <summary>
-    /// Dynamické přepočítání velikosti grafů podle velikosti okna
+    /// Automatically recalculates graph dimensions when the window is resized.
     /// </summary>
     protected override void OnSizeAllocated(double width, double height)
     {
@@ -417,7 +422,7 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
     }
 
     /// <summary>
-    /// Přepočet velikosti grafů ručně – např. po změně záložky
+    /// Manually recalculates graph sizes, e.g., when switching tabs.
     /// </summary>
     private void RecalculateGraphSizes()
     {
@@ -437,10 +442,8 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
         }
     }
 
-    // --- metody pro suggestions a jejich výběr ---
-
     /// <summary>
-    /// Na základě vstupu v teplotním SearchBaru připraví návrhy hodnot
+    /// Generates value suggestions for temperature input based on current file data.
     /// </summary>
     private void UpdateTemperatureSuggestions(string input)
     {
@@ -464,7 +467,7 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
     }
 
     /// <summary>
-    /// Na základě vstupu ve frekvenčním SearchBaru připraví návrhy hodnot
+    /// Generates value suggestions for frequency input based on current file data.
     /// </summary>
     private void UpdateFrequencySuggestions(string input)
     {
@@ -488,7 +491,7 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
     }
 
     /// <summary>
-    /// Po kliknutí na návrh v teplotním dropdownu nastaví hodnotu a spustí hledání
+    /// Handles selection from the temperature suggestion dropdown.
     /// </summary>
     private void OnTemperatureSuggestionSelected(object sender, SelectionChangedEventArgs e)
     {
@@ -501,7 +504,7 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
     }
 
     /// <summary>
-    /// Po kliknutí na návrh ve frekvenčním dropdownu nastaví hodnotu a spustí hledání
+    /// Handles selection from the frequency suggestion dropdown.
     /// </summary>
     private void OnFrequencySuggestionSelected(object sender, SelectionChangedEventArgs e)
     {
@@ -513,6 +516,9 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
         }
     }
 
+    /// <summary>
+    /// Configures Y-axis appearance for the given graph.
+    /// </summary>
     private Axis[] setYAxes(GraphModel graph, string yKey, double minY, double maxY, double yPadding)
     {
         return new Axis[]
@@ -532,6 +538,9 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
         };
     }
 
+    /// <summary>
+    /// Configures X-axis appearance for the given graph.
+    /// </summary>
     private Axis[] setXAxes(GraphModel graph, bool isFrequencyXAxis, double minX, double maxX, double xPadding)
     {
         return new Axis[]
@@ -554,85 +563,79 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
         };
     }
 
+    /// <summary>
+    /// Creates and returns a configured data series.
+    /// </summary>
     private ISeries[] CreateSeries(IEnumerable<ObservablePoint> points, string yKey, bool isFrequencyXAxis)
     {
         return new ISeries[]
         {
-        new LineSeries<ObservablePoint>
-        {
-            Values = points.ToList(),
-            GeometrySize = 4,
-            GeometryFill = new SolidColorPaint(SKColors.Blue),
-            GeometryStroke = new SolidColorPaint(SKColors.DarkBlue) { StrokeThickness = 2 },
-            Stroke = new SolidColorPaint(SKColors.Green) { StrokeThickness = 3 },
-            Name = yKey,
-            Fill = null,
-            XToolTipLabelFormatter = (chartPoint) =>
+            new LineSeries<ObservablePoint>
             {
-                if (chartPoint.Model is ObservablePoint model && model.X.HasValue)
+                Values = points.ToList(),
+                GeometrySize = 4,
+                GeometryFill = new SolidColorPaint(SKColors.Blue),
+                GeometryStroke = new SolidColorPaint(SKColors.DarkBlue) { StrokeThickness = 2 },
+                Stroke = new SolidColorPaint(SKColors.Green) { StrokeThickness = 3 },
+                Name = yKey,
+                Fill = null,
+                XToolTipLabelFormatter = (chartPoint) =>
                 {
-                    double xValue = model.X.GetValueOrDefault();
-                    return isFrequencyXAxis
-                        ? $"f: {Math.Pow(10, xValue):E3} Hz"
-                        : $"T: {model.X:F1} °C";
+                    if (chartPoint.Model is ObservablePoint model && model.X.HasValue)
+                    {
+                        double xValue = model.X.GetValueOrDefault();
+                        return isFrequencyXAxis
+                            ? $"f: {Math.Pow(10, xValue):E3} Hz"
+                            : $"T: {model.X:F1} °C";
+                    }
+                    return string.Empty;
+                },
+                YToolTipLabelFormatter = (chartPoint) =>
+                {
+                    if (chartPoint.Model is ObservablePoint model)
+                        return $"Y: {model.Y:F3}";
+                    return string.Empty;
                 }
-                return string.Empty;
-            },
-            YToolTipLabelFormatter = (chartPoint) =>
-            {
-                if (chartPoint.Model is ObservablePoint model)
-                    return $"Y: {model.Y:F3}";
-                return string.Empty;
             }
-        }
         };
     }
 
     /// <summary>
-    /// Vykreslí graf podle aktuálního nastavení a dat v SelectedTab.
+    /// Renders a graph using the current data and axis configurations.
     /// </summary>
-    /// <param name="graph"></param>
     public void RenderGraph(GraphModel graph)
     {
         if (SelectedTab?.FilteredData == null || !SelectedTab.FilteredData.Any())
             return;
+
         var data = SelectedTab.FilteredData.Filtered;
         string yKey = graph.SelectedKeyY ?? graph.AvailableYKeys?.FirstOrDefault() ?? "Eps'";
         graph.SelectedKeyY = yKey;
 
         bool isFrequencyXAxis = SelectedTab.FilteredData.FilterType == "temperature";
 
-        // vybereme body podle osy
         var points = data
-            .Where(d => d.extraValues.ContainsKey(yKey) && (isFrequencyXAxis ? d.Frequency > 0 : true)) // ochrana proti log(0)
+            .Where(d => d.extraValues.ContainsKey(yKey) && (isFrequencyXAxis ? d.Frequency > 0 : true))
             .Select(d => new ObservablePoint(
                 isFrequencyXAxis ? Math.Log10(d.Frequency) : d.Temperature,
                 d.extraValues[yKey]))
             .ToList();
 
-        Debug.WriteLine($"[RenderGraph] Klíč Y: {yKey}, Počet bodů: {points.Count}");
         if (points.Count == 0)
         {
-            Debug.WriteLine("[RenderGraph] Žádné body k vykreslení.");
             return;
         }
 
-        // Calculate min/max values for axes
         double minX = points.Min(p => p.X) ?? 0.0;
         double maxX = points.Max(p => p.X) ?? 0.0;
         double minY = points.Min(p => p.Y) ?? 0.0;
         double maxY = points.Max(p => p.Y) ?? 0.0;
 
-        // Apply some padding to the min/max values
         double xPadding = (maxX - minX) * 0.1;
         double yPadding = (maxY - minY) * 0.1;
 
-        // Improve the line series configuration
         graph.Series = CreateSeries(points, yKey, isFrequencyXAxis);
-
-        // Set the graph axes
         graph.XAxes = setXAxes(graph, isFrequencyXAxis, minX, maxX, xPadding);
-
         graph.YAxes = setYAxes(graph, yKey, minX, maxY, yPadding);
     }
 }
