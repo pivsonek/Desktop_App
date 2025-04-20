@@ -23,7 +23,7 @@
           ColumnSpacing="20"
           Padding="10">
 
-        <!-- HORNÍ LIŠTA -->
+        <!-- UPPER BAR -->
         <Grid Grid.Row="0" Grid.ColumnSpan="2" HeightRequest="80" RowSpacing="5" ZIndex="100">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -149,7 +149,7 @@
             </CollectionView>
         </Grid>
 
-        <!-- LEVÝ PANEL -->
+        <!-- LEFT PANEL -->
         <Grid Grid.Row="1" Grid.Column="0"
               RowDefinitions="*,*"
               WidthRequest="300"
@@ -195,7 +195,7 @@
             </Grid>
         </Grid>
 
-        <!-- HLAVNÍ OBLAST S GRAFY -->
+        <!-- MAIN GRAPH AREA -->
         <ScrollView Grid.Row="1" Grid.Column="1" BackgroundColor="White" Padding="10" Orientation="Vertical"
                     VerticalScrollBarVisibility="{Binding IsAnyGraphExpanded, Converter={StaticResource BoolToScrollVisibilityConverter}}"
                     HorizontalScrollBarVisibility="Never">
