@@ -1,42 +1,38 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace project.Converters
 {
     /// <summary>
-    /// Převádí kolekci na bool hodnotu pro ověření, zda je kolekce prázdná nebo ne.
+    /// Converts a collection to a boolean value indicating whether the collection is non-empty.
     /// </summary>
     public class CollectionToVisibilityConverter : IValueConverter
     {
         /// <summary>
-        /// Převádí kolekci na bool hodnotu pro ověření, zda je kolekce prázdná nebo ne.
+        /// Converts a collection to a boolean. Returns true if the collection is not empty, otherwise false.
         /// </summary>
-        /// <param name="value"></param>
-        /// <param name="targetType"></param>
-        /// <param name="parameter"></param>
-        /// <param name="culture"></param>
-        /// <returns></returns>
+        /// <param name="value">The input value (expected to be ICollection).</param>
+        /// <param name="targetType">The target binding type (unused).</param>
+        /// <param name="parameter">Optional parameter (unused).</param>
+        /// <param name="culture">The culture information (unused).</param>
+        /// <returns>True if the collection has items, otherwise false.</returns>
         public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             return value is ICollection collection && collection.Count > 0;
-
         }
 
         /// <summary>
-        /// Zpětná konverze není podporována.
+        /// ConvertBack is not supported for this converter.
         /// </summary>
-        /// <param name="value"></param>
-        /// <param name="targetType"></param>
-        /// <param name="parameter"></param>
-        /// <param name="culture"></param>
-        /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
+        /// <param name="value">The input value.</param>
+        /// <param name="targetType">The target type.</param>
+        /// <param name="parameter">Optional parameter.</param>
+        /// <param name="culture">The culture info.</param>
+        /// <returns>Throws NotImplementedException.</returns>
+        /// <exception cref="NotImplementedException">Always thrown.</exception>
         public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
-            => throw new NotImplementedException();
+        {
+            throw new NotImplementedException();
+        }
     }
 }
