@@ -1,24 +1,23 @@
 using project.Models;
-using System.Collections.ObjectModel; // Pro kolekci ObservableCollection, která umožňuje dynamické aktualizace UI
+using System.Collections.ObjectModel;
 
 namespace project.Managers;
 
 /// <summary>
-/// Spravuje kolekci grafů – umožňuje jejich přidávání, mazání a změnu velikosti.
+/// Manages a collection of graphs – provides methods to add, remove, and toggle graph expansion.
 /// </summary>
 public class GraphManager
 {
     /// <summary>
-    /// Kolekce grafů, která podporuje dynamické změny a notifikace pro UI.
+    /// The collection of graphs that supports dynamic updates and UI notifications.
     /// </summary>
     public ObservableCollection<GraphModel> Graphs { get; private set; } = new();
 
     /// <summary>
-    /// Konstruktor třídy, který inicializuje seznam grafů.
+    /// Initializes the GraphManager and populates it with four default graphs.
     /// </summary>
     public GraphManager()
     {
-        // Při vytvoření instance GraphManager se automaticky přidají 4 výchozí grafy
         Graphs.Add(new GraphModel { Name = "Graf 1" });
         Graphs.Add(new GraphModel { Name = "Graf 2" });
         Graphs.Add(new GraphModel { Name = "Graf 3" });
@@ -26,36 +25,35 @@ public class GraphManager
     }
 
     /// <summary>
-    /// Přidá nový graf do seznamu grafů.
-    /// Každý nový graf dostane unikátní název podle pořadí.
+    /// Adds a new graph to the collection with an automatically generated name.
     /// </summary>
     public void AddGraph()
     {
-        int nextNumber = Graphs.Count + 1; // Určení čísla nového grafu
-        Graphs.Add(new GraphModel { Name = $"Graf {nextNumber}" }); // Přidání nového grafu do kolekce
+        int nextNumber = Graphs.Count + 1;
+        Graphs.Add(new GraphModel { Name = $"Graf {nextNumber}" });
     }
 
     /// <summary>
-    /// Odebere zadaný graf ze seznamu, pokud existuje.
+    /// Removes the specified graph from the collection if it exists.
     /// </summary>
-    /// <param name="graph">Graf, který chceme odstranit.</param>
+    /// <param name="graph">The graph to remove.</param>
     public void RemoveGraph(GraphModel graph)
     {
-        if (Graphs.Contains(graph)) // Kontrola, zda graf existuje v seznamu
+        if (Graphs.Contains(graph))
         {
-            Graphs.Remove(graph); // Odebrání grafu
+            Graphs.Remove(graph);
         }
     }
 
     /// <summary>
-    /// Přepne stav zvětšení/zmenšení daného grafu.
+    /// Toggles the expansion state of the specified graph.
     /// </summary>
-    /// <param name="graph">Graf, jehož velikost chceme změnit.</param>
+    /// <param name="graph">The graph to toggle expansion for.</param>
     public void ToggleGraphSize(GraphModel graph)
     {
-        if (graph != null) // Kontrola, zda je graf platný
+        if (graph != null)
         {
-            graph.IsExpanded = !graph.IsExpanded; // Přepnutí stavu
+            graph.IsExpanded = !graph.IsExpanded;
         }
     }
 }
