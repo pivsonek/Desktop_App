@@ -1,6 +1,6 @@
-﻿namespace project.App
+namespace project.App
 {     /// <summary>
-      /// Hlavní třída aplikace.
+      /// Main application class.
       /// </summary>
     public partial class App : Application
     {
@@ -9,11 +9,11 @@
             InitializeComponent();
         }
         /// <summary>
-        /// Vytvoří hlavní okno aplikace.
+        /// Creates the main application window.
         /// </summary>
         protected override Window CreateWindow(IActivationState? activationState)
         {
-            return new Window(new AppShell()); // Hlavní okno obsahující navigaci AppShell
+            return new Window(new AppShell());
         }
     }
 }
