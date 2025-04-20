@@ -1,17 +1,29 @@
-﻿using LiveChartsCore;
+using LiveChartsCore;
 using LiveChartsCore.Defaults;
 using LiveChartsCore.SkiaSharpView;
+using project.Models;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Windows.Input;
 
 namespace project.Models;
 
+/// <summary>
+/// Generátor grafů.
+/// </summary>
 public static class GraphGenerator
 {
-    public static GraphModel CreateGraph(
-    string name,
-    IEnumerable<Data> data,
-    string extraValueKey,
-    string xLabel = "Frekvence [Hz]",
-    string yLabel = "Hodnota")
+    /// <summary>
+    /// Vytvoří graf na základě zadaných dat.
+    /// </summary>
+    /// <param name="name"></param>
+    /// <param name="data"></param>
+    /// <param name="extraValueKey"></param>
+    /// <param name="xLabel"></param>
+    /// <param name="yLabel"></param>
+    /// <returns></returns>
+    public static GraphModel CreateGraph(string name, IEnumerable<Data> data, string extraValueKey, string xLabel = "Frekvence [Hz]", string yLabel = "Hodnota")
     {
         var groups = data
             .Where(d => d.extraValues.ContainsKey(extraValueKey))
