@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.Maui;assembly=LiveChartsCore.SkiaSharpView.Maui"
+             xmlns:models="clr-namespace:project.Models"
+             x:Class="project.View.GraphCard"
+             x:DataType="models:GraphModel">
+
+    <Border BackgroundColor="LightGray"
+            Padding="10"
+            Stroke="Gray"
+            StrokeShape="RoundRectangle 8"
+            IsVisible="{Binding IsVisible}"
+            WidthRequest="{Binding Width}"
+            HeightRequest="{Binding Height}"
+            MinimumHeightRequest="200">
+
+        <AbsoluteLayout>
+
+            <!-- main graph content -->
+            <StackLayout AbsoluteLayout.LayoutBounds="0,0,1,1"
+                         AbsoluteLayout.LayoutFlags="All">
+
+                <Grid ColumnDefinitions="*,Auto,Auto,Auto">
+                    <!-- graph name -->
+                    <Label Text="{Binding Name}"
+                           FontSize="18"
+                           FontAttributes="Bold"
+                           VerticalOptions="Center"/>
+
+                    <!-- export -->
+                    <Button Text="Export"
+                            Clicked="OnExportGraphClicked"
+                            BackgroundColor="Gray"
+                            TextColor="White"
+                            Margin="7"
+                            Grid.Column="1"/>
+
+                    <!-- zvětšit / zmenšit -->
+                    <Button Text="{Binding IsExpanded, Converter={StaticResource BoolToTextConverter}}"
+                            Clicked="OnResizeGraphClicked"
+                            BackgroundColor="DarkGray"
+                            TextColor="White"
+                            Margin="7"
+                            Grid.Column="2"/>
+
+                    <!-- arrow for Y axis selection -->
+                    <Button x:Name="YAxisButton"
+                            Grid.Column="3"
+                            WidthRequest="48"
+                            HeightRequest="44"
+                            FontSize="20"
+                            CornerRadius="20"
+                            BackgroundColor="White"
+                            BorderColor="DarkGray"
+                            BorderWidth="1"
+                            TextColor="Black"
+                            Text="▼"
+                            Clicked="OnShowYAxisMenuClicked"
+                            IsVisible="{Binding AvailableYKeys, Converter={StaticResource CollectionToVisibilityConverter}}" />
+                </Grid>
+
+                <!-- graph -->
+                <lvc:CartesianChart
+                    Series="{Binding Series}"
+                    XAxes="{Binding XAxes}"
+                    YAxes="{Binding YAxes}"
+                    WidthRequest="{Binding Width}"
+                    HeightRequest="{Binding Height}"
+                    BackgroundColor="White"
+                    IsVisible="{Binding IsVisible}"
+                    ZoomMode="Both"
+                    LegendPosition="Right"
+                    DrawMarginFrame="{x:Null}"
+                    DrawMargin="{x:Null}"
+                    Padding="20,10,20,35"
+                    TooltipPosition="Top"
+                    HorizontalOptions="Fill"
+                    VerticalOptions="Fill"
+                    FindingStrategy="ExactMatchTakeClosest" />
+
+            </StackLayout>
+
+        </AbsoluteLayout>
+
+    </Border>
+</ContentView>
