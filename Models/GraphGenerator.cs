@@ -1,28 +1,23 @@
 using LiveChartsCore;
 using LiveChartsCore.Defaults;
 using LiveChartsCore.SkiaSharpView;
-using project.Models;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Windows.Input;
 
 namespace project.Models;
 
 /// <summary>
-/// Generátor grafů.
+/// Provides functionality to generate graphs from data records.
 /// </summary>
 public static class GraphGenerator
 {
     /// <summary>
-    /// Vytvoří graf na základě zadaných dat.
+    /// Creates a graph based on the provided dataset and selected value key.
     /// </summary>
-    /// <param name="name"></param>
-    /// <param name="data"></param>
-    /// <param name="extraValueKey"></param>
-    /// <param name="xLabel"></param>
-    /// <param name="yLabel"></param>
-    /// <returns></returns>
+    /// <param name="name">The name of the graph.</param>
+    /// <param name="data">The data source used to generate the graph.</param>
+    /// <param name="extraValueKey">The key for the Y-axis value from extra data.</param>
+    /// <param name="xLabel">The label for the X-axis.</param>
+    /// <param name="yLabel">The label for the Y-axis.</param>
+    /// <returns>A new GraphModel object with generated series and axis configuration.</returns>
     public static GraphModel CreateGraph(string name, IEnumerable<Data> data, string extraValueKey, string xLabel = "Frekvence [Hz]", string yLabel = "Hodnota")
     {
         var groups = data
