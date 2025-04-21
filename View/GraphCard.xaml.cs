@@ -119,7 +119,7 @@ public partial class GraphCard : ContentView
         {
             using (var workbook = new XLWorkbook())
             {
-                var worksheet = workbook.Worksheets.Add(graph.Name);
+                var worksheet = workbook.Worksheets.Add(graph.Name.Trim());
 
                 string xHeader = MainPage.Instance?.SelectedTab?.FilteredData?.FilterType == "temperature"
                     ? "Frequency [Hz]"
