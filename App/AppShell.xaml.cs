@@ -1,17 +1,3 @@
-<<<<<<< HEAD
-﻿namespace project.App;
-
-/// <summary>
-/// Definuje strukturu navigace aplikace.
-/// </summary>
-public partial class AppShell : Shell
-{
-    public AppShell()
-    {
-        InitializeComponent();
-    }
-}
-=======
 namespace project.App;
 
 /// <summary>
@@ -24,4 +10,3 @@ public partial class AppShell : Shell
         InitializeComponent();
     }
 }
->>>>>>> export-w-graphs
