@@ -124,7 +124,7 @@ public partial class YAxisPopup : Popup
         base.Close();
     }
 
-    public new void Close() => CloseWithAnimation();
+    public void Close() => CloseWithAnimation();
 
     
 }
