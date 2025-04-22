@@ -3,6 +3,8 @@ using LiveChartsCore.Defaults;
 using LiveChartsCore.SkiaSharpView;
 using project.Models;
 using project.Services;
+using CommunityToolkit.Maui.Views;
+
 
 namespace project.View;
 
@@ -148,20 +150,29 @@ public partial class GraphCard : ContentView
     /// <summary>
     /// Displays a menu for selecting a new Y-axis key.
     /// </summary>
-    public async void OnShowYAxisMenuClicked(object sender, EventArgs e)
+    public void OnShowYAxisMenuClicked(object sender, EventArgs e)
     {
         if (BindingContext is not GraphModel graph || graph.AvailableYKeys is null)
             return;
 
-        var options = graph.SelectedKeyY == null
-            ? graph.AvailableYKeys.ToArray()
-            : graph.AvailableYKeys.Where(k => k != graph.SelectedKeyY).ToArray();
+        var options = graph.AvailableYKeys
+            .Where(k => k != graph.SelectedKeyY)
+            .ToArray();
 
-        if (options.Length == 0) return;
+        if (options.Length == 0 || sender is not VisualElement button)
+            return;
 
-        var selected = await Shell.Current.DisplayActionSheet("Osa Y", "Zrušit", null, options);
-
-        if (!string.IsNullOrEmpty(selected) && selected != "Zrušit")
+        YAxisPopup popup = new YAxisPopup(options, selected =>
+        {
             graph.SelectedKeyY = selected;
+        });
+
+        popup.Anchor = (Microsoft.Maui.Controls.View?)button;
+
+        var page = Application.Current?.Windows.FirstOrDefault()?.Page;
+        if (page is not null)
+        {
+            page.ShowPopup(popup);
+        }
     }
 }
