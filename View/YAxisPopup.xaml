@@ -1,0 +1,36 @@
+<toolkit:Popup
+    x:Class="project.View.YAxisPopup"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    CanBeDismissedByTappingOutsideOfPopup="True"
+    Color="Transparent">
+
+    <AbsoluteLayout
+        x:Name="RootLayout"
+        BackgroundColor="Transparent"
+        LayoutBounds="0,0,1,1"
+        LayoutFlags="All">
+
+        <Grid
+            x:Name="PopupContent"
+            WidthRequest="200"
+            HeightRequest="150"
+            Opacity="0"
+            BackgroundColor="Transparent">
+
+            <Border
+                Stroke="DarkOrange"
+                StrokeThickness="2"
+                StrokeShape="RoundRectangle 6"
+                BackgroundColor="White"
+                Padding="5">
+
+                <ScrollView>
+                    <VerticalStackLayout x:Name="ItemsLayout" Spacing="6" />
+                </ScrollView>
+            </Border>
+        </Grid>
+
+    </AbsoluteLayout>
+</toolkit:Popup>

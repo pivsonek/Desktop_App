@@ -46,18 +46,17 @@
 
                     <!-- arrow for Y axis selection -->
                     <Button x:Name="YAxisButton"
-                            Grid.Column="3"
-                            WidthRequest="48"
-                            HeightRequest="44"
-                            FontSize="20"
-                            CornerRadius="20"
-                            BackgroundColor="White"
-                            BorderColor="DarkGray"
-                            BorderWidth="1"
-                            TextColor="Black"
-                            Text="▼"
-                            Clicked="OnShowYAxisMenuClicked"
-                            IsVisible="{Binding AvailableYKeys, Converter={StaticResource CollectionToVisibilityConverter}}" />
+                    Grid.Column="3"
+                    WidthRequest="48"
+                    HeightRequest="44"
+                    FontSize="20"
+                    CornerRadius="20"
+                    BackgroundColor="White"
+                    BorderColor="DarkGray"
+                    BorderWidth="1"
+                    TextColor="Black"
+                    Text="▼"
+                    Clicked="OnShowYAxisMenuClicked" /> 
                 </Grid>
 
                 <!-- graph -->
