@@ -95,6 +95,14 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
                 OnPropertyChanged(nameof(SelectedTab.Graphs));
                 OnPropertyChanged(nameof(TemperatureInput));
                 OnPropertyChanged(nameof(FrequencyInput));
+
+                if (_selectedTab?.Graphs != null)
+                {
+                    foreach (var graph in _selectedTab.Graphs)
+                    {
+                        RenderGraph(graph);
+                    }
+                }
             }
         }
     }
@@ -525,7 +533,7 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
         {
             new Axis
             {
-                Name = yKey,
+                Name = "",
                 NamePaint = new SolidColorPaint(SKColors.Black),
                 Labeler = val => val.ToString("F2"),
                 TextSize = 13,
@@ -533,7 +541,8 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
                 MinLimit = minY - yPadding,
                 MaxLimit = maxY + yPadding,
                 IsVisible = true,
-                ShowSeparatorLines = true
+                ShowSeparatorLines = true,
+                Position = LiveChartsCore.Measure.AxisPosition.Start
             }
         };
     }
@@ -547,7 +556,7 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
         {
             new Axis
             {
-                Name = isFrequencyXAxis ? "log₁₀(Frequency [Hz])" : "Temperature [°C]",
+                Name = "",
                 NamePaint = new SolidColorPaint(SKColors.Black),
                 LabelsRotation = 15,
                 Labeler = isFrequencyXAxis
@@ -558,7 +567,7 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
                 MinLimit = minX - xPadding,
                 MaxLimit = maxX + xPadding,
                 IsVisible = true,
-                ShowSeparatorLines = true
+                ShowSeparatorLines = false
             }
         };
     }
@@ -636,6 +645,6 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
 
         graph.Series = CreateSeries(points, yKey, isFrequencyXAxis);
         graph.XAxes = setXAxes(graph, isFrequencyXAxis, minX, maxX, xPadding);
-        graph.YAxes = setYAxes(graph, yKey, minX, maxY, yPadding);
+        graph.YAxes = setYAxes(graph, yKey, minY, maxY, yPadding);
     }
 }
