@@ -68,7 +68,6 @@
                     HeightRequest="{Binding Height}"
                     BackgroundColor="White"
                     IsVisible="{Binding IsVisible}"
-                    ZoomMode="Both"
                     LegendPosition="Right"
                     DrawMarginFrame="{x:Null}"
                     DrawMargin="{x:Null}"
